@@ -10,10 +10,11 @@ const menuItems = [
 ];
 
 const adminItems = [
-  { label: 'Import Data', route: 'import.index', icon: '📥', roles: ['super_admin'] },
   { label: 'Laporan Kinerja', route: 'performance.index', icon: '🏆', roles: ['super_admin'] },
   { label: 'Jejak Audit', route: 'audit.index', icon: '🔍', roles: ['super_admin'] },
   { label: 'Pengguna', route: 'users.index', icon: '👥', roles: ['super_admin'] },
+  { label: 'Alias', route: 'aliases.index', icon: '🏷️', roles: ['super_admin'] },
+  { label: 'Tema', route: 'themes.index', icon: '🎨', roles: ['super_admin', 'admin_konten'] },
 ];
 
 export default function Sidebar() {
@@ -46,11 +47,12 @@ export default function Sidebar() {
           </Link>
         ))}
 
-        {userRoles.some(r => ['super_admin'].includes(r)) && (
+        {/* Admin Section */}
+        {adminItems.some(item => item.roles.some(r => userRoles.includes(r))) && (
           <>
             <div className="border-t border-white/10 my-3" />
             <div className="px-3 py-1 text-xs text-white/30 uppercase tracking-wider">Admin</div>
-            {adminItems.map((item) => (
+            {adminItems.filter(item => item.roles.some(r => userRoles.includes(r))).map((item) => (
               <Link
                 key={item.route}
                 href={route(item.route)}

@@ -3,7 +3,7 @@
 use App\Http\Controllers\{
     UserController, AliasController, ThemeController,
     DashboardController, ContentController, FypController,
-    LeaveController, AttendanceController
+    LeaveController, AttendanceController, PerformanceController, AuditController
 };
 use Illuminate\Support\Facades\Route;
 
@@ -12,14 +12,14 @@ Route::get('/', fn() => redirect()->route('login'));
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
-// ── Arsip Konten (KNT) ──
+// ── Arsip Konten ──
 Route::middleware(['auth', 'verified'])->prefix('content')->group(function () {
     Route::get('/', [ContentController::class, 'index'])->name('content.index');
     Route::post('/', [ContentController::class, 'store'])->name('content.store');
     Route::put('/{report}/views', [ContentController::class, 'updateViews'])->name('content.updateViews');
 });
 
-// ── Pelaporan FYP ──
+// ── FYP ──
 Route::middleware(['auth', 'verified'])->prefix('fyp')->group(function () {
     Route::get('/', [FypController::class, 'index'])->name('fyp.index');
     Route::post('/', [FypController::class, 'store'])->name('fyp.store');
@@ -27,7 +27,7 @@ Route::middleware(['auth', 'verified'])->prefix('fyp')->group(function () {
     Route::post('/bulk-review', [FypController::class, 'bulkReview'])->name('fyp.bulkReview');
 });
 
-// ── Pengajuan Izin ──
+// ── Izin ──
 Route::middleware(['auth', 'verified'])->prefix('leave')->group(function () {
     Route::get('/', [LeaveController::class, 'index'])->name('leave.index');
     Route::post('/', [LeaveController::class, 'store'])->name('leave.store');
@@ -41,7 +41,17 @@ Route::middleware(['auth', 'verified'])->prefix('attendance')->group(function ()
     Route::get('/export', [AttendanceController::class, 'export'])->name('attendance.export');
 });
 
-// ── Admin: User Management (super_admin) ──
+// ── Laporan Kinerja (super_admin) ──
+Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('performance')->group(function () {
+    Route::get('/', [PerformanceController::class, 'index'])->name('performance.index');
+});
+
+// ── Jejak Audit (super_admin) ──
+Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('audit')->group(function () {
+    Route::get('/', [AuditController::class, 'index'])->name('audit.index');
+});
+
+// ── Admin: User Management ──
 Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('admin')->group(function () {
     Route::get('users', [UserController::class, 'index'])->name('users.index');
     Route::post('users', [UserController::class, 'store'])->name('users.store');
