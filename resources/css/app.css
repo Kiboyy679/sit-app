@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    background-color: #131313;
+    color: #ffffff;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+}
+
+.text-neon {
+    color: #6bfb9a;
+}
+
+.bg-neon {
+    background-color: #6bfb9a;
+}
+
+.border-glass {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+input:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 0 2px #6bfb9a;
+    outline: none;
+}
