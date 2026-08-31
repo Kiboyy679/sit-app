@@ -1,0 +1,332 @@
+import React, { useState } from 'react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
+import AppLayout from '@/Layouts/AppLayout';
+import GlassCard from '@/Components/GlassCard';
+import Button from '@/Components/Button';
+import Input from '@/Components/Input';
+import Badge from '@/Components/Badge';
+
+const platforms = [
+  { value: '', label: 'Semua' },
+  { value: 'tiktok', label: 'TikTok' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'x', label: 'X (Twitter)' },
+  { value: 'threads', label: 'Threads' },
+];
+
+const statuses = [
+  { value: '', label: 'Semua' },
+  { value: 'pending', label: 'Menunggu' },
+  { value: 'approved', label: 'Disetujui' },
+  { value: 'rejected', label: 'Ditolak' },
+];
+
+export default function FypIndex({ reports, themes, stats, karyawanList }) {
+  const { auth } = usePage().props;
+  const isAdmin = auth.user?.roles?.some(r => ['super_admin', 'admin_fyp'].includes(r));
+
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterPlatform, setFilterPlatform] = useState('');
+
+  const { data, setData, post, processing, errors, reset } = useForm({
+    original_url: '',
+    platform: 'tiktok',
+    theme_id: '',
+    post_type: 'main',
+    impressions: '',
+    engagements: '',
+  });
+
+  const submit = (e) => {
+    e.preventDefault();
+    post(route('fyp.store'), {
+      onSuccess: () => { setShowSubmit(false); reset(); },
+    });
+  };
+
+  const reviewReport = (reportId, status) => {
+    router.put(route('fyp.review', reportId), { status }, { preserveScroll: true });
+  };
+
+  const bulkReview = (status) => {
+    if (selectedIds.length === 0) return;
+    router.post(route('fyp.bulkReview'), { ids: selectedIds, status }, {
+      preserveScroll: true,
+      onSuccess: () => setSelectedIds([]),
+    });
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = () => {
+    const pendingIds = reports.data.filter(r => r.status === 'pending').map(r => r.id);
+    setSelectedIds(prev => prev.length === pendingIds.length ? [] : pendingIds);
+  };
+
+  const applyFilter = (key, value) => {
+    const params = new URLSearchParams(window.location.search);
+    if (value) params.set(key, value);
+    else params.delete(key);
+    router.get(route('fyp.index') + '?' + params.toString());
+  };
+
+  return (
+    <AppLayout>
+      <Head title="Laporan FYP" />
+      <div className="space-y-6">
+        {/* Header + Stats */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Pelaporan FYP</h1>
+            <p className="text-white/50 text-sm">Postingan ke platform sosial media</p>
+          </div>
+          <Button onClick={() => setShowSubmit(!showSubmit)}>
+            {showSubmit ? 'Tutup' : '+ Kirim Laporan'}
+          </Button>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Menunggu', value: stats.pending, color: 'text-yellow-400', icon: '⏳' },
+            { label: 'Disetujui', value: stats.approved, color: 'text-green-400', icon: '✅' },
+            { label: 'Ditolak', value: stats.rejected, color: 'text-red-400', icon: '❌' },
+            { label: 'Total Bulan Ini', value: stats.total, color: 'text-[#6bfb9a]', icon: '📊' },
+          ].map((s, i) => (
+            <div key={i} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex items-center gap-3">
+              <span className="text-2xl">{s.icon}</span>
+              <div>
+                <div className={`text-xl font-bold ${s.color}`}>{s.value}</div>
+                <div className="text-white/40 text-xs">{s.label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Submit Form */}
+        {showSubmit && (
+          <GlassCard title="Kirim Laporan FYP">
+            <form onSubmit={submit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Input
+                    label="URL Postingan *"
+                    value={data.original_url}
+                    onChange={(e) => setData('original_url', e.target.value)}
+                    error={errors.original_url}
+                    placeholder="https://www.tiktok.com/@user/video/123..."
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">Platform *</label>
+                  <select
+                    value={data.platform}
+                    onChange={(e) => setData('platform', e.target.value)}
+                    className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white"
+                  >
+                    {platforms.filter(p => p.value).map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">Tema *</label>
+                  <select
+                    value={data.theme_id}
+                    onChange={(e) => setData('theme_id', e.target.value)}
+                    className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white"
+                  >
+                    <option value="">Pilih tema</option>
+                    {themes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                  {errors.theme_id && <p className="text-xs text-red-400 mt-1">{errors.theme_id}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">Jenis Postingan *</label>
+                  <select
+                    value={data.post_type}
+                    onChange={(e) => setData('post_type', e.target.value)}
+                    className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white"
+                  >
+                    <option value="main">Postingan Utama</option>
+                    <option value="reply">Balasan</option>
+                    <option value="comment">Komentar</option>
+                  </select>
+                </div>
+                <div>
+                  <Input
+                    label="Penayangan (Impressions) *"
+                    type="number"
+                    value={data.impressions}
+                    onChange={(e) => setData('impressions', e.target.value)}
+                    error={errors.impressions}
+                    placeholder="0"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div>
+                  <Input
+                    label="Interaksi (Engagements) *"
+                    type="number"
+                    value={data.engagements}
+                    onChange={(e) => setData('engagements', e.target.value)}
+                    error={errors.engagements}
+                    placeholder="0"
+                    min="0"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={processing}>
+                  {processing ? 'Mengirim...' : 'Kirim Laporan'}
+                </Button>
+                <Button variant="ghost" onClick={() => { setShowSubmit(false); reset(); }}>Batal</Button>
+              </div>
+            </form>
+          </GlassCard>
+        )}
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <select
+            value={filterStatus}
+            onChange={(e) => { setFilterStatus(e.target.value); applyFilter('status', e.target.value); }}
+            className="bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white text-sm"
+          >
+            {statuses.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+          <select
+            value={filterPlatform}
+            onChange={(e) => { setFilterPlatform(e.target.value); applyFilter('platform', e.target.value); }}
+            className="bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white text-sm"
+          >
+            {platforms.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+
+          {isAdmin && selectedIds.length > 0 && (
+            <div className="flex gap-2 ml-auto">
+              <span className="text-sm text-white/50 self-center">{selectedIds.length} dipilih</span>
+              <Button size="sm" onClick={() => bulkReview('approved')}>
+                Setujui Semua
+              </Button>
+              <Button size="sm" variant="danger" onClick={() => bulkReview('rejected')}>
+                Tolak Semua
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Reports Table */}
+        <GlassCard>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-left text-white/50">
+                  {isAdmin && <th className="py-3 px-3 w-8">
+                    <input type="checkbox" onChange={toggleSelectAll}
+                      checked={reports.data.filter(r => r.status === 'pending').length > 0 && selectedIds.length === reports.data.filter(r => r.status === 'pending').length}
+                      className="rounded border-white/20"
+                    />
+                  </th>}
+                  <th className="py-3 px-3">URL / Platform</th>
+                  <th className="py-3 px-3">Tema</th>
+                  <th className="py-3 px-3">Jenis</th>
+                  <th className="py-3 px-3 text-right">Penayangan</th>
+                  <th className="py-3 px-3 text-right">Interaksi</th>
+                  <th className="py-3 px-3">Status</th>
+                  <th className="py-3 px-3">Karyawan</th>
+                  {isAdmin && <th className="py-3 px-3">Aksi</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {reports.data.map((report) => (
+                  <tr key={report.id} className={`border-b border-white/5 hover:bg-white/5 ${selectedIds.includes(report.id) ? 'bg-[#6bfb9a]/5' : ''}`}>
+                    {isAdmin && (
+                      <td className="py-3 px-3">
+                        {report.status === 'pending' && (
+                          <input type="checkbox" checked={selectedIds.includes(report.id)}
+                            onChange={() => toggleSelect(report.id)}
+                            className="rounded border-white/20"
+                          />
+                        )}
+                      </td>
+                    )}
+                    <td className="py-3 px-3">
+                      <div className="text-white truncate max-w-xs">{report.original_url}</div>
+                      <div className="text-xs text-white/40 capitalize">{report.platform}</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <Badge variant="neon">{report.theme?.name || '-'}</Badge>
+                    </td>
+                    <td className="py-3 px-3 text-white/60 capitalize">{report.post_type}</td>
+                    <td className="py-3 px-3 text-right text-white">{(report.impressions || 0).toLocaleString()}</td>
+                    <td className="py-3 px-3 text-right text-white">{(report.engagements || 0).toLocaleString()}</td>
+                    <td className="py-3 px-3">
+                      <Badge variant={
+                        report.status === 'approved' ? 'success' :
+                        report.status === 'rejected' ? 'danger' : 'warning'
+                      }>
+                        {report.status === 'approved' ? 'Disetujui' :
+                         report.status === 'rejected' ? 'Ditolak' : 'Menunggu'}
+                      </Badge>
+                      {report.engagement_exceeds_views && (
+                        <span className="ml-1 text-yellow-400" title="Interaksi melebihi penayangan">⚠️</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-3 text-white/60 text-xs">{report.user?.name}</td>
+                    {isAdmin && (
+                      <td className="py-3 px-3">
+                        {report.status === 'pending' && (
+                          <div className="flex gap-1">
+                            <button onClick={() => reviewReport(report.id, 'approved')}
+                              className="text-green-400 hover:underline text-xs">✓</button>
+                            <button onClick={() => reviewReport(report.id, 'rejected')}
+                              className="text-red-400 hover:underline text-xs">✕</button>
+                          </div>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {reports.data.length === 0 && (
+              <div className="text-center py-12 text-white/30">
+                <div className="text-4xl mb-3">📭</div>
+                <p>Belum ada laporan FYP</p>
+              </div>
+            )}
+          </div>
+        </GlassCard>
+
+        {/* Pagination */}
+        {reports.last_page > 1 && (
+          <div className="flex justify-center gap-2">
+            {reports.links.map((link, idx) => (
+              <button
+                key={idx}
+                onClick={() => link.url && router.get(link.url)}
+                disabled={!link.url}
+                className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+                  link.active
+                    ? 'bg-[#6bfb9a]/20 text-[#6bfb9a] font-medium'
+                    : link.url
+                    ? 'bg-white/5 text-white/60 hover:bg-white/10'
+                    : 'bg-white/5 text-white/20 cursor-not-allowed'
+                }`}
+                dangerouslySetInnerHTML={{ __html: link.label }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </AppLayout>
+  );
+}
