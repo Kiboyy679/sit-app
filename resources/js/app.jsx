@@ -1,16 +1,14 @@
 import './bootstrap';
 import '../css/app.css';
+import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
-import { App } from '@inertiajs/react';
-import React from 'react';
 
-const el = document.getElementById('app');
-if (el) {
-  const root = createRoot(el);
-  root.render(
-    <App
-      initialPage={JSON.parse(el.dataset.page)}
-      resolveComponent={(name) => import(`./Pages/${name}`).then(module => module.default)}
-    />
-  );
-}
+createInertiaApp({
+  resolve: (name) => {
+    const pages = import.meta.glob('./Pages/**/*.jsx', { eager: true });
+    return pages[`./Pages/${name}.jsx`].default;
+  },
+  setup({ el, props, App }) {
+    createRoot(el).render(<App {...props} />);
+  },
+});
