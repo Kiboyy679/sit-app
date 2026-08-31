@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\{UserController, AliasController, ThemeController, DashboardController};
+use App\Http\Controllers\{UserController, AliasController, ThemeController, DashboardController, ContentController};
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -11,6 +11,13 @@ Route::get('/', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+// ── Arsip Konten (KNT) ──
+Route::middleware(['auth', 'verified'])->prefix('content')->group(function () {
+    Route::get('/', [ContentController::class, 'index'])->name('content.index');
+    Route::post('/', [ContentController::class, 'store'])->name('content.store');
+    Route::put('/{report}/views', [ContentController::class, 'updateViews'])->name('content.updateViews');
+});
 
 // Admin: User Management (super_admin only)
 Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('admin')->group(function () {
