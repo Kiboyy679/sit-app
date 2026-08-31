@@ -360,6 +360,57 @@ class CsvImportService
             ];
         }
 
+        // IMP-15 additional anomaly types:
+        // 5. Zero views with high engagement (suspicious)
+        if ($views === 0 && $engagements > 10) {
+            $anomalies[] = [
+                'type' => 'zero_views_high_engagement',
+                'row' => $rowIndex,
+                'message' => "Baris {$rowIndex}: 0 penayangan tapi {$engagements} interaksi",
+                'severity' => 'warning',
+            ];
+        }
+
+        // 6. Extremely high views (>1M)
+        if ($views > 1000000) {
+            $anomalies[] = [
+                'type' => 'extreme_views',
+                'row' => $rowIndex,
+                'message' => "Baris {$rowIndex}: {$views} penayangan (sangat tinggi)",
+                'severity' => 'warning',
+            ];
+        }
+
+        // 7. Missing URL
+        if (empty($mapped['original_url'])) {
+            $anomalies[] = [
+                'type' => 'missing_url',
+                'row' => $rowIndex,
+                'message' => "Baris {$rowIndex}: URL kosong",
+                'severity' => 'error',
+            ];
+        }
+
+        // 8. Missing employee name
+        if (empty($mapped['employee_name'])) {
+            $anomalies[] = [
+                'type' => 'missing_employee',
+                'row' => $rowIndex,
+                'message' => "Baris {$rowIndex}: Nama karyawan kosong",
+                'severity' => 'error',
+            ];
+        }
+
+        // 9. Negative numbers
+        if ($views < 0 || $engagements < 0) {
+            $anomalies[] = [
+                'type' => 'negative_values',
+                'row' => $rowIndex,
+                'message' => "Baris {$rowIndex}: Nilai negatif (views={$views}, engagements={$engagements})",
+                'severity' => 'error',
+            ];
+        }
+
         return $anomalies;
     }
 }

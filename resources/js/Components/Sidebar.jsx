@@ -12,6 +12,7 @@ const menuItems = [
 const adminItems = [
   { label: 'Laporan Kinerja', route: 'performance.index', icon: '🏆', roles: ['super_admin'] },
   { label: 'Identitas', route: 'identity.index', icon: '🏷️', roles: ['super_admin'] },
+  { label: 'Arsip', route: 'archive.index', icon: '📦', roles: ['super_admin'] },
   { label: 'Import Data', route: 'import.index', icon: '📥', roles: ['super_admin'] },
   { label: 'Jejak Audit', route: 'audit.index', icon: '🔍', roles: ['super_admin'] },
   { label: 'Pengguna', route: 'users.index', icon: '👥', roles: ['super_admin'] },
@@ -25,31 +26,31 @@ export default function Sidebar() {
   const userRoles = auth?.user?.roles || [];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-black/40 backdrop-blur-xl border-r border-white/10 h-screen fixed left-0 top-0 pt-16">
+    <aside className="glass hidden lg:flex flex-col w-64 bg-white/5 backdrop-blur-xl border-r border-white/10 h-screen fixed left-0 top-0 pt-16" role="navigation" aria-label="Navigasi utama">
       {/* Logo */}
       <div className="px-6 py-4 border-b border-white/10">
-        <h1 className="text-xl font-bold text-[#6bfb9a]">SIT-APP</h1>
+        <h1 className="text-xl font-bold text-[var(--accent)]">SIT-APP</h1>
         <p className="text-xs text-white/40">Sistem Pemantauan Kinerja</p>
       </div>
 
       {/* Menu */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1" aria-label="Menu utama">
         {menuItems.map((item) => (
           <Link
             key={item.route}
             href={route(item.route)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
               url.startsWith('/' + item.route.split('.')[0])
-                ? 'bg-[#6bfb9a]/10 text-[#6bfb9a] font-medium'
-                : 'text-white/60 hover:bg-white/5 hover:text-white'
+                ? 'bg-[var(--accent)]/10 text-[var(--accent)] font-medium clay'
+                : 'text-white/60 hover:bg-white/5 hover:text-white clay'
             }`}
+            aria-current={url.startsWith('/' + item.route.split('.')[0]) ? 'page' : undefined}
           >
-            <span className="text-lg">{item.icon}</span>
+            <span className="text-lg" aria-hidden="true">{item.icon}</span>
             {item.label}
           </Link>
         ))}
 
-        {/* Admin Section */}
         {adminItems.some(item => item.roles.some(r => userRoles.includes(r))) && (
           <>
             <div className="border-t border-white/10 my-3" />
@@ -60,11 +61,12 @@ export default function Sidebar() {
                 href={route(item.route)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                   url.startsWith('/' + item.route.split('.')[0])
-                    ? 'bg-[#6bfb9a]/10 text-[#6bfb9a] font-medium'
-                    : 'text-white/60 hover:bg-white/5 hover:text-white'
+                    ? 'bg-[var(--accent)]/10 text-[var(--accent)] font-medium clay'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white clay'
                 }`}
+                aria-current={url.startsWith('/' + item.route.split('.')[0]) ? 'page' : undefined}
               >
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-lg" aria-hidden="true">{item.icon}</span>
                 {item.label}
               </Link>
             ))}
@@ -75,7 +77,7 @@ export default function Sidebar() {
       {/* User Info */}
       <div className="px-4 py-3 border-t border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#6bfb9a]/20 flex items-center justify-center text-[#6bfb9a] text-sm font-bold">
+          <div className="w-8 h-8 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] text-sm font-bold" aria-hidden="true">
             {auth?.user?.name?.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">

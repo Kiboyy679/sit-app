@@ -15,22 +15,22 @@ class ThemeController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-        $normalized = strtolower(preg_replace('/[^a-z0-9]/i', '', $validated['name']));
-        $validated['normalized'] = $normalized;
-        $validated['is_canonical'] = true;
-        $validated['usage_count'] = 0;
-        Theme::create($validated);
-        return back()->with('success', 'Tema berhasil ditambahkan.');
+        try {
+            $validated = $request->validate(['name' => 'required|string|max:255']);
+            $normalized = strtolower(preg_replace('/[^a-z0-9]/i', '', $validated['name']));
+            $validated['normalized'] = $normalized;
+            $validated['is_canonical'] = true;
+            $validated['usage_count'] = 0;
+            Theme::create($validated);
+            return back()->with('success', 'Tema berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['name' => 'Gagal menambahkan tema: ' . $e->getMessage()]);
+        }
     }
 
     public function update(Request $request, Theme $theme)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+        $validated = $request->validate(['name' => 'required|string|max:255']);
         $normalized = strtolower(preg_replace('/[^a-z0-9]/i', '', $validated['name']));
         $theme->update(['name' => $validated['name'], 'normalized' => $normalized, 'is_canonical' => true]);
         return back()->with('success', 'Tema berhasil diperbarui.');
@@ -47,14 +47,10 @@ class ThemeController extends Controller
         }
         $source = Theme::find($validated['source_id']);
         $target = Theme::find($validated['target_id']);
-
-        // Update all reports that use source theme
         \App\Models\ContentReport::where('theme_id', $source->id)->update(['theme_id' => $target->id]);
         \App\Models\FypReport::where('theme_id', $source->id)->update(['theme_id' => $target->id]);
-
         $target->increment('usage_count', $source->usage_count);
         $source->delete();
-
         return back()->with('success', 'Tema berhasil digabungkan.');
     }
 

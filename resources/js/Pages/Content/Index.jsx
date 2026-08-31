@@ -30,6 +30,27 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
     });
   };
 
+  // KNT-11: Draft save via localStorage (auto-save every 5 seconds)
+  React.useEffect(() => {
+    const saved = localStorage.getItem('sitapp-content-draft');
+    if (saved) {
+      try {
+        const draft = JSON.parse(saved);
+        if (draft.theme) setData('theme', draft.theme);
+        if (draft.description) setData('description', draft.description);
+      } catch (e) {}
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      if (data.theme || data.description) {
+        localStorage.setItem('sitapp-content-draft', JSON.stringify({ theme: data.theme, description: data.description }));
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [data.theme, data.description]);
+
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     setDragOver(false);

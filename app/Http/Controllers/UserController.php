@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{Hash, DB};
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -26,14 +26,20 @@ class UserController extends Controller
             'role' => 'required|exists:roles,name',
         ]);
 
-        $user = User::create([
-            ...$validated,
-            'password' => Hash::make($validated['password']),
-            'is_active' => true,
-        ]);
-        $user->assignRole($validated['role']);
-
-        return back()->with('success', 'Pengguna berhasil ditambahkan.');
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                ...$validated,
+                'password' => Hash::make($validated['password']),
+                'is_active' => true,
+            ]);
+            $user->assignRole($validated['role']);
+            DB::commit();
+            return back()->with('success', 'Pengguna berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['email' => 'Gagal menambahkan pengguna: ' . $e->getMessage()]);
+        }
     }
 
     public function update(Request $request, User $user)
@@ -46,15 +52,21 @@ class UserController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'unit' => $validated['unit'] ?? $user->unit,
-            'is_active' => $validated['is_active'] ?? $user->is_active,
-        ]);
-        $user->syncRoles([$validated['role']]);
-
-        return back()->with('success', 'Pengguna berhasil diperbarui.');
+        DB::beginTransaction();
+        try {
+            $user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'unit' => $validated['unit'] ?? $user->unit,
+                'is_active' => $validated['is_active'] ?? $user->is_active,
+            ]);
+            $user->syncRoles([$validated['role']]);
+            DB::commit();
+            return back()->with('success', 'Pengguna berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['email' => 'Gagal memperbarui: ' . $e->getMessage()]);
+        }
     }
 
     public function resetPassword(Request $request, User $user)

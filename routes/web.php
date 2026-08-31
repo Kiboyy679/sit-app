@@ -4,28 +4,35 @@ use App\Http\Controllers\{
     UserController, AliasController, ThemeController,
     DashboardController, ContentController, FypController,
     LeaveController, AttendanceController, PerformanceController, AuditController,
-    ImportController, IdentityController
+    ImportController, IdentityController, ArchiveController
 };
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\RateLimiter;
 
 Route::get('/', fn() => redirect()->route('login'));
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
-// ── Arsip Konten ──
-Route::middleware(['auth', 'verified'])->prefix('content')->group(function () {
+// ── Arsip Konten (rate: 30/minute) ──
+Route::middleware(['auth', 'verified', 'throttle:content'])->prefix('content')->group(function () {
     Route::get('/', [ContentController::class, 'index'])->name('content.index');
     Route::post('/', [ContentController::class, 'store'])->name('content.store');
     Route::put('/{report}/views', [ContentController::class, 'updateViews'])->name('content.updateViews');
 });
+RateLimiter::for('content', function () {
+    return \Illuminate\Http\Request::class . ':30,1';
+});
 
-// ── FYP ──
-Route::middleware(['auth', 'verified'])->prefix('fyp')->group(function () {
+// ── FYP (rate: 30/minute) ──
+Route::middleware(['auth', 'verified', 'throttle:fyp'])->prefix('fyp')->group(function () {
     Route::get('/', [FypController::class, 'index'])->name('fyp.index');
     Route::post('/', [FypController::class, 'store'])->name('fyp.store');
     Route::put('/{report}/review', [FypController::class, 'review'])->name('fyp.review');
     Route::post('/bulk-review', [FypController::class, 'bulkReview'])->name('fyp.bulkReview');
+});
+RateLimiter::for('fyp', function () {
+    return \Illuminate\Http\Request::class . ':30,1';
 });
 
 // ── Izin ──
@@ -52,6 +59,31 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('audit')->gr
     Route::get('/', [AuditController::class, 'index'])->name('audit.index');
 });
 
+// ── Manajemen Identitas (super_admin) ──
+Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('identity')->group(function () {
+    Route::get('/', [IdentityController::class, 'index'])->name('identity.index');
+    Route::post('/', [IdentityController::class, 'store'])->name('identity.store');
+    Route::put('/{identity}', [IdentityController::class, 'update'])->name('identity.update');
+    Route::delete('/{identity}', [IdentityController::class, 'destroy'])->name('identity.destroy');
+    Route::get('/{identity}/detail', [IdentityController::class, 'detail'])->name('identity.detail');
+    Route::post('/{identity}/record', [IdentityController::class, 'storeRecord'])->name('identity.storeRecord');
+    Route::post('/merge', [IdentityController::class, 'merge'])->name('identity.merge');
+});
+
+// ── Import CSV (super_admin, rate: 5/minute) ──
+Route::middleware(['auth', 'verified', 'role:super_admin', 'throttle:import'])->prefix('import')->group(function () {
+    Route::get('/', [ImportController::class, 'index'])->name('import.index');
+    Route::post('/upload', [ImportController::class, 'upload'])->name('import.upload');
+    Route::get('/preview/{batch}', [ImportController::class, 'preview'])->name('import.preview');
+    Route::post('/process/{batch}', [ImportController::class, 'process'])->name('import.process');
+    Route::post('/skip/{batch}', [ImportController::class, 'skipRow'])->name('import.skipRow');
+    Route::post('/commit/{batch}', [ImportController::class, 'commit'])->name('import.commit');
+    Route::delete('/{batch}', [ImportController::class, 'destroy'])->name('import.destroy');
+});
+RateLimiter::for('import', function () {
+    return \Illuminate\Http\Request::class . ':5,1';
+});
+
 // ── Admin: User Management ──
 Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('admin')->group(function () {
     Route::get('users', [UserController::class, 'index'])->name('users.index');
@@ -74,26 +106,11 @@ Route::middleware(['auth', 'verified', 'role:super_admin|admin_konten'])->prefix
     Route::delete('themes/{theme}', [ThemeController::class, 'destroy'])->name('themes.destroy');
 });
 
-// ── Manajemen Identitas (super_admin) ──
-Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('identity')->group(function () {
-    Route::get('/', [IdentityController::class, 'index'])->name('identity.index');
-    Route::post('/', [IdentityController::class, 'store'])->name('identity.store');
-    Route::put('/{identity}', [IdentityController::class, 'update'])->name('identity.update');
-    Route::delete('/{identity}', [IdentityController::class, 'destroy'])->name('identity.destroy');
-    Route::get('/{identity}/detail', [IdentityController::class, 'detail'])->name('identity.detail');
-    Route::post('/{identity}/record', [IdentityController::class, 'storeRecord'])->name('identity.storeRecord');
-    Route::post('/merge', [IdentityController::class, 'merge'])->name('identity.merge');
-});
-
-// ── Import CSV (super_admin) ──
-Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('import')->group(function () {
-    Route::get('/', [ImportController::class, 'index'])->name('import.index');
-    Route::post('/upload', [ImportController::class, 'upload'])->name('import.upload');
-    Route::get('/preview/{batch}', [ImportController::class, 'preview'])->name('import.preview');
-    Route::post('/process/{batch}', [ImportController::class, 'process'])->name('import.process');
-    Route::post('/skip/{batch}', [ImportController::class, 'skipRow'])->name('import.skipRow');
-    Route::post('/commit/{batch}', [ImportController::class, 'commit'])->name('import.commit');
-    Route::delete('/{batch}', [ImportController::class, 'destroy'])->name('import.destroy');
+// ── Arsip Mingguan (super_admin) ──
+Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('archive')->group(function () {
+    Route::get('/', [ArchiveController::class, 'index'])->name('archive.index');
+    Route::post('/generate', [ArchiveController::class, 'generate'])->name('archive.generate');
+    Route::get('/verify/{period}', [ArchiveController::class, 'verify'])->name('archive.verify');
 });
 
 require __DIR__.'/auth.php';

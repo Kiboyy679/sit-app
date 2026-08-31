@@ -2,9 +2,9 @@ import React from 'react';
 
 export default function GlassCard({ title, children, footerAction, className = '' }) {
   return (
-    <div className={`bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6 shadow-lg ${className}`}>
+    <section className={`clay p-6 ${className}`} aria-label={title || undefined}>
       {title && (
-        <h3 className="text-lg font-semibold text-white mb-4 pb-2 border-b border-white/10">
+        <h3 className="heading-neon text-lg font-bold text-white mb-4 pb-2 border-b border-white/10">
           {title}
         </h3>
       )}
@@ -14,6 +14,6 @@ export default function GlassCard({ title, children, footerAction, className = '
           {footerAction}
         </div>
       )}
-    </div>
+    </section>
   );
 }
