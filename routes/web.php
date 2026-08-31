@@ -2,7 +2,8 @@
 
 use App\Http\Controllers\{
     UserController, AliasController, ThemeController,
-    DashboardController, ContentController, FypController
+    DashboardController, ContentController, FypController,
+    LeaveController, AttendanceController
 };
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,20 @@ Route::middleware(['auth', 'verified'])->prefix('fyp')->group(function () {
     Route::post('/', [FypController::class, 'store'])->name('fyp.store');
     Route::put('/{report}/review', [FypController::class, 'review'])->name('fyp.review');
     Route::post('/bulk-review', [FypController::class, 'bulkReview'])->name('fyp.bulkReview');
+});
+
+// ── Pengajuan Izin ──
+Route::middleware(['auth', 'verified'])->prefix('leave')->group(function () {
+    Route::get('/', [LeaveController::class, 'index'])->name('leave.index');
+    Route::post('/', [LeaveController::class, 'store'])->name('leave.store');
+    Route::put('/{leave}/review', [LeaveController::class, 'review'])->name('leave.review');
+});
+
+// ── Kehadiran ──
+Route::middleware(['auth', 'verified'])->prefix('attendance')->group(function () {
+    Route::get('/', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::post('/', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::get('/export', [AttendanceController::class, 'export'])->name('attendance.export');
 });
 
 // ── Admin: User Management (super_admin) ──
