@@ -4,7 +4,7 @@ use App\Http\Controllers\{
     UserController, AliasController, ThemeController,
     DashboardController, ContentController, FypController,
     LeaveController, AttendanceController, PerformanceController, AuditController,
-    ImportController
+    ImportController, IdentityController
 };
 use Illuminate\Support\Facades\Route;
 
@@ -72,6 +72,17 @@ Route::middleware(['auth', 'verified', 'role:super_admin|admin_konten'])->prefix
     Route::post('themes/{theme}/merge', [ThemeController::class, 'merge'])->name('themes.merge');
     Route::post('themes/{theme}/approve', [ThemeController::class, 'approve'])->name('themes.approve');
     Route::delete('themes/{theme}', [ThemeController::class, 'destroy'])->name('themes.destroy');
+});
+
+// ── Manajemen Identitas (super_admin) ──
+Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('identity')->group(function () {
+    Route::get('/', [IdentityController::class, 'index'])->name('identity.index');
+    Route::post('/', [IdentityController::class, 'store'])->name('identity.store');
+    Route::put('/{identity}', [IdentityController::class, 'update'])->name('identity.update');
+    Route::delete('/{identity}', [IdentityController::class, 'destroy'])->name('identity.destroy');
+    Route::get('/{identity}/detail', [IdentityController::class, 'detail'])->name('identity.detail');
+    Route::post('/{identity}/record', [IdentityController::class, 'storeRecord'])->name('identity.storeRecord');
+    Route::post('/merge', [IdentityController::class, 'merge'])->name('identity.merge');
 });
 
 // ── Import CSV (super_admin) ──
