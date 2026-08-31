@@ -3,7 +3,8 @@
 use App\Http\Controllers\{
     UserController, AliasController, ThemeController,
     DashboardController, ContentController, FypController,
-    LeaveController, AttendanceController, PerformanceController, AuditController
+    LeaveController, AttendanceController, PerformanceController, AuditController,
+    ImportController
 };
 use Illuminate\Support\Facades\Route;
 
@@ -71,6 +72,17 @@ Route::middleware(['auth', 'verified', 'role:super_admin|admin_konten'])->prefix
     Route::post('themes/{theme}/merge', [ThemeController::class, 'merge'])->name('themes.merge');
     Route::post('themes/{theme}/approve', [ThemeController::class, 'approve'])->name('themes.approve');
     Route::delete('themes/{theme}', [ThemeController::class, 'destroy'])->name('themes.destroy');
+});
+
+// ── Import CSV (super_admin) ──
+Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('import')->group(function () {
+    Route::get('/', [ImportController::class, 'index'])->name('import.index');
+    Route::post('/upload', [ImportController::class, 'upload'])->name('import.upload');
+    Route::get('/preview/{batch}', [ImportController::class, 'preview'])->name('import.preview');
+    Route::post('/process/{batch}', [ImportController::class, 'process'])->name('import.process');
+    Route::post('/skip/{batch}', [ImportController::class, 'skipRow'])->name('import.skipRow');
+    Route::post('/commit/{batch}', [ImportController::class, 'commit'])->name('import.commit');
+    Route::delete('/{batch}', [ImportController::class, 'destroy'])->name('import.destroy');
 });
 
 require __DIR__.'/auth.php';

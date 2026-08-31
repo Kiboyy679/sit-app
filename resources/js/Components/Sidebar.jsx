@@ -11,6 +11,7 @@ const menuItems = [
 
 const adminItems = [
   { label: 'Laporan Kinerja', route: 'performance.index', icon: '🏆', roles: ['super_admin'] },
+  { label: 'Import Data', route: 'import.index', icon: '📥', roles: ['super_admin'] },
   { label: 'Jejak Audit', route: 'audit.index', icon: '🔍', roles: ['super_admin'] },
   { label: 'Pengguna', route: 'users.index', icon: '👥', roles: ['super_admin'] },
   { label: 'Alias', route: 'aliases.index', icon: '🏷️', roles: ['super_admin'] },
