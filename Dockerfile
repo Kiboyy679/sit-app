@@ -73,6 +73,9 @@ RUN php artisan config:cache && \
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Create supervisor log directory
+RUN mkdir -p /var/log/supervisor
+
 # Copy nginx config
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
