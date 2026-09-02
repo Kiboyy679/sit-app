@@ -18,16 +18,16 @@ export default function ArchiveIndex({ archives }) {
       <Head title="Arsip Mingguan" />
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Arsip Mingguan</h1>
-          <p className="text-white/50 text-sm">Buat paket arsip materi + checksum verifikasi</p>
+          <h1 className="text-2xl font-bold text-on-surface">Arsip Mingguan</h1>
+          <p className="text-on-surface-variant text-sm">Buat paket arsip materi + checksum verifikasi</p>
         </div>
 
         <GlassCard title="Buat Arsip Baru">
           <form onSubmit={generate} className="flex gap-4 items-end">
             <div className="flex-1">
-              <label className="block text-sm text-white/60 mb-1">Minggu (tanggal awal minggu)</label>
+              <label className="block text-sm text-on-surface-variant mb-1">Minggu (tanggal awal minggu)</label>
               <input type="date" value={data.week} onChange={(e) => setData('week', e.target.value)}
-                className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white" />
+                className="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface" />
             </div>
             <Button type="submit" disabled={processing}>{processing ? 'Membuat...' : 'Buat Arsip'}</Button>
           </form>
@@ -37,10 +37,10 @@ export default function ArchiveIndex({ archives }) {
           {archives.length > 0 ? (
             <div className="space-y-2">
               {archives.map((a, i) => (
-                <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg px-4 py-3">
+                <div key={i} className="flex items-center justify-between bg-surface-container-low/50 rounded-lg px-4 py-3">
                   <div>
-                    <div className="text-sm text-white">{a.name}</div>
-                    <div className="text-xs text-white/40">{a.file_count} berkas</div>
+                    <div className="text-sm text-on-surface">{a.name}</div>
+                    <div className="text-xs text-on-surface-variant/70">{a.file_count} berkas</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={a.has_checksum ? 'success' : 'warning'}>
@@ -54,7 +54,7 @@ export default function ArchiveIndex({ archives }) {
               ))}
             </div>
           ) : (
-            <p className="text-white/30 text-sm text-center py-8">Belum ada arsip</p>
+            <p className="text-on-surface-variant/50 text-sm text-center py-8">Belum ada arsip</p>
           )}
         </GlassCard>
       </div>

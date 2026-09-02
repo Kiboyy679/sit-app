@@ -54,8 +54,8 @@ export default function IdentityIndex({ identities, brands }) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Manajemen Identitas</h1>
-            <p className="text-white/50 text-sm">{identities.total} identitas terdaftar</p>
+            <h1 className="text-2xl font-bold text-on-surface">Manajemen Identitas</h1>
+            <p className="text-on-surface-variant text-sm">{identities.total} identitas terdaftar</p>
           </div>
           <Button onClick={() => { setShowForm(!showForm); setEditing(null); reset(); }}>
             {showForm ? 'Tutup' : '+ Tambah Identitas'}
@@ -68,7 +68,7 @@ export default function IdentityIndex({ identities, brands }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari nama, brand, platform..."
-            className="flex-1 bg-white/5 border border-white/15 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:ring-2 focus:ring-[#6bfb9a]/50 outline-none"
+            className="flex-1 bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-4 py-2 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-primary/50 outline-none"
           />
           <Button type="submit" variant="secondary">Cari</Button>
         </form>
@@ -80,9 +80,9 @@ export default function IdentityIndex({ identities, brands }) {
               <Input label="Nama *" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} required />
               <Input label="Brand *" value={data.brand} onChange={(e) => setData('brand', e.target.value)} error={errors.brand} required />
               <div>
-                <label className="block text-sm text-white/60 mb-1">Platform *</label>
+                <label className="block text-sm text-on-surface-variant mb-1">Platform *</label>
                 <select value={data.platform} onChange={(e) => setData('platform', e.target.value)}
-                  className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white">
+                  className="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface">
                   {['tiktok','instagram','youtube','facebook','x','threads'].map(p => (
                     <option key={p} value={p}>{p}</option>
                   ))}
@@ -102,18 +102,18 @@ export default function IdentityIndex({ identities, brands }) {
           <GlassCard title="Gabungkan Identitas">
             <div className="flex gap-4 items-end">
               <div className="flex-1">
-                <label className="block text-sm text-white/60 mb-1">Sumber (dihapus)</label>
+                <label className="block text-sm text-on-surface-variant mb-1">Sumber (dihapus)</label>
                 <select value={mergeSource} onChange={(e) => setMergeSource(e.target.value)}
-                  className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white">
+                  className="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface">
                   <option value="">Pilih...</option>
                   {identities.data.map(i => <option key={i.id} value={i.id}>{i.name} ({i.platform})</option>)}
                 </select>
               </div>
-              <div className="text-white/30 pb-2">→</div>
+              <div className="text-on-surface-variant/50 pb-2">→</div>
               <div className="flex-1">
-                <label className="block text-sm text-white/60 mb-1">Tujuan (tetap)</label>
+                <label className="block text-sm text-on-surface-variant mb-1">Tujuan (tetap)</label>
                 <select value={mergeTarget} onChange={(e) => setMergeTarget(e.target.value)}
-                  className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white">
+                  className="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface">
                   <option value="">Pilih...</option>
                   {identities.data.map(i => <option key={i.id} value={i.id}>{i.name} ({i.platform})</option>)}
                 </select>
@@ -128,7 +128,7 @@ export default function IdentityIndex({ identities, brands }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-left text-white/50">
+                <tr className="border-b border-outline-variant/30 text-left text-on-surface-variant">
                   <th className="py-3 px-3">Nama</th>
                   <th className="py-3 px-3">Brand</th>
                   <th className="py-3 px-3">Platform</th>
@@ -138,25 +138,25 @@ export default function IdentityIndex({ identities, brands }) {
               </thead>
               <tbody>
                 {identities.data.map((item) => (
-                  <tr key={item.id} className="border-b border-white/5 hover:bg-white/5">
-                    <td className="py-3 px-3 text-white font-medium">{item.name}</td>
-                    <td className="py-3 px-3 text-white/60">{item.brand}</td>
+                  <tr key={item.id} className="border-b border-outline-variant/20 hover:bg-surface-container-low/50">
+                    <td className="py-3 px-3 text-on-surface font-medium">{item.name}</td>
+                    <td className="py-3 px-3 text-on-surface-variant">{item.brand}</td>
                     <td className="py-3 px-3">
                       <Badge variant="neon">{platformIcons[item.platform] || '📱'} {item.platform}</Badge>
                     </td>
-                    <td className="py-3 px-3 text-white/60 font-mono text-xs">{item.account_handle}</td>
+                    <td className="py-3 px-3 text-on-surface-variant font-mono text-xs">{item.account_handle}</td>
                     <td className="py-3 px-3 flex gap-2">
-                      <Link href={route('identity.detail', item.id)} className="text-[#6bfb9a] hover:underline text-xs">Detail</Link>
-                      <button onClick={() => startEdit(item)} className="text-yellow-400 hover:underline text-xs">Edit</button>
+                      <Link href={route('identity.detail', item.id)} className="text-primary hover:underline text-xs">Detail</Link>
+                      <button onClick={() => startEdit(item)} className="text-yellow-600 hover:underline text-xs">Edit</button>
                       <button onClick={() => router.delete(route('identity.destroy', item.id), { preserveScroll: true })}
-                        className="text-red-400 hover:underline text-xs">Hapus</button>
+                        className="text-error hover:underline text-xs">Hapus</button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {identities.data.length === 0 && (
-              <div className="text-center py-12 text-white/30">
+              <div className="text-center py-12 text-on-surface-variant/50">
                 <div className="text-4xl mb-3">🔍</div>
                 <p>Tidak ada identitas ditemukan</p>
               </div>
@@ -170,9 +170,9 @@ export default function IdentityIndex({ identities, brands }) {
             {identities.links.map((link, idx) => (
               <button key={idx} onClick={() => link.url && router.get(link.url)} disabled={!link.url}
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                  link.active ? 'bg-[#6bfb9a]/20 text-[#6bfb9a] font-medium'
-                  : link.url ? 'bg-white/5 text-white/60 hover:bg-white/10'
-                  : 'bg-white/5 text-white/20 cursor-not-allowed'
+                  link.active ? 'bg-primary/10 text-primary font-medium'
+                  : link.url ? 'bg-surface-container-low/50 text-on-surface-variant hover:bg-surface-container-high'
+                  : 'bg-surface-container-low/50 text-on-surface-variant/30 cursor-not-allowed'
                 }`} dangerouslySetInnerHTML={{ __html: link.label }} />
             ))}
           </div>

@@ -88,8 +88,8 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Arsip Konten</h1>
-            <p className="text-white/50 text-sm">Periode {period} &middot; {myCount} berkas diunggah</p>
+            <h1 className="text-2xl font-bold text-on-surface">Arsip Konten</h1>
+            <p className="text-on-surface-variant text-sm">Periode {period} &middot; {myCount} berkas diunggah</p>
           </div>
           <Button onClick={() => setShowUpload(!showUpload)}>
             {showUpload ? 'Tutup' : '+ Unggah Konten'}
@@ -118,11 +118,11 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
 
               {/* Description */}
               <div>
-                <label className="block text-sm text-white/60 mb-1">Keterangan (opsional)</label>
+                <label className="block text-sm text-on-surface-variant mb-1">Keterangan (opsional)</label>
                 <textarea
                   value={data.description}
                   onChange={(e) => setData('description', e.target.value)}
-                  className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white placeholder-white/30 focus:ring-2 focus:ring-[#6bfb9a]/50 outline-none h-20 resize-none"
+                  className="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-primary/50 outline-none h-20 resize-none"
                   placeholder="Deskripsi singkat..."
                 />
               </div>
@@ -134,8 +134,8 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
                 onDragLeave={() => setDragOver(false)}
                 className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
                   dragOver
-                    ? 'border-[#6bfb9a] bg-[#6bfb9a]/5'
-                    : 'border-white/15 hover:border-white/25'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-outline-variant/50 hover:border-outline-variant'
                 }`}
                 onClick={() => document.getElementById('file-input').click()}
               >
@@ -148,10 +148,10 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
                   className="hidden"
                 />
                 <div className="text-4xl mb-2">📁</div>
-                <p className="text-white/60 text-sm">
-                  Seret & lepas berkas di sini, atau <span className="text-[#6bfb9a]">klik untuk memilih</span>
+                <p className="text-on-surface-variant text-sm">
+                  Seret & lepas berkas di sini, atau <span className="text-primary">klik untuk memilih</span>
                 </p>
-                <p className="text-white/30 text-xs mt-1">
+                <p className="text-on-surface-variant/50 text-xs mt-1">
                   Maks 10 berkas &middot; Gambar max 5MB, Video max 50MB &middot; jpg, png, webp, mp4, mov
                 </p>
               </div>
@@ -159,17 +159,17 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
               {/* Selected Files */}
               {data.files.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm text-white/60">{data.files.length} berkas dipilih:</p>
+                  <p className="text-sm text-on-surface-variant">{data.files.length} berkas dipilih:</p>
                   {data.files.map((file, idx) => (
-                    <div key={idx} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2">
+                    <div key={idx} className="flex items-center justify-between bg-surface-container-low/50 rounded-lg px-3 py-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-white/50 text-xs">
+                        <span className="text-on-surface-variant text-xs">
                           {file.type?.startsWith('video') ? '🎬' : '🖼️'}
                         </span>
-                        <span className="text-sm text-white truncate">{file.name}</span>
-                        <span className="text-xs text-white/40">{formatSize(file.size)}</span>
+                        <span className="text-sm text-on-surface truncate">{file.name}</span>
+                        <span className="text-xs text-on-surface-variant/70">{formatSize(file.size)}</span>
                       </div>
-                      <button type="button" onClick={() => removeFile(idx)} className="text-red-400/60 hover:text-red-400 text-sm ml-2">✕</button>
+                      <button type="button" onClick={() => removeFile(idx)} className="text-error/60 hover:text-error text-sm ml-2">✕</button>
                     </div>
                   ))}
                 </div>
@@ -178,20 +178,20 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
               {/* KNT-04: Upload Progress */}
               {uploadProgress !== null && (
                 <div className="space-y-1">
-                  <div className="flex justify-between text-xs text-white/50">
+                  <div className="flex justify-between text-xs text-on-surface-variant">
                     <span>Mengunggah...</span>
                     <span>{uploadProgress}%</span>
                   </div>
-                  <div className="w-full bg-white/10 rounded-full h-2">
+                  <div className="w-full bg-surface-container-high rounded-full h-2">
                     <div
-                      className="bg-[#6bfb9a] h-2 rounded-full transition-all duration-300"
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
                 </div>
               )}
 
-              {errors.files && <p className="text-sm text-red-400">{errors.files}</p>}
+              {errors.files && <p className="text-sm text-error">{errors.files}</p>}
 
               <div className="flex gap-2">
                 <Button type="submit" disabled={processing || data.files.length === 0}>
@@ -211,12 +211,12 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
                 {/* Thumbnail Grid */}
                 <div className="grid grid-cols-2 gap-1 mb-3 -mx-6 -mt-6">
                   {report.media?.slice(0, 4).map((media, idx) => (
-                    <div key={media.id} className="aspect-square bg-white/5 flex items-center justify-center text-2xl">
+                    <div key={media.id} className="aspect-square bg-surface-container-low/50 flex items-center justify-center text-2xl">
                       {media.file_type === 'mp4' || media.file_type === 'mov' ? '🎬' : '🖼️'}
                     </div>
                   ))}
                   {(!report.media || report.media.length === 0) && (
-                    <div className="col-span-2 aspect-video bg-white/5 flex items-center justify-center text-white/20 text-sm">
+                    <div className="col-span-2 aspect-video bg-surface-container-low/50 flex items-center justify-center text-on-surface-variant/30 text-sm">
                       Tidak ada berkas
                     </div>
                   )}
@@ -226,9 +226,9 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Badge variant="neon">{report.theme?.name || 'Tanpa Tema'}</Badge>
-                    <span className="text-xs text-white/40">{report.report_date}</span>
+                    <span className="text-xs text-on-surface-variant/70">{report.report_date}</span>
                   </div>
-                  <div className="text-xs text-white/50">{report.user?.name} &middot; {report.file_count} file</div>
+                  <div className="text-xs text-on-surface-variant">{report.user?.name} &middot; {report.file_count} file</div>
 
                   {/* KNT-06: Views Update */}
                   <div className="flex items-center gap-2">
@@ -238,17 +238,17 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
                           type="number"
                           value={viewValue}
                           onChange={(e) => setViewValue(e.target.value)}
-                          className="w-20 bg-white/5 border border-white/15 rounded px-2 py-1 text-sm text-white"
+                          className="w-20 bg-surface-container-low/50 border border-outline-variant/50 rounded px-2 py-1 text-sm text-on-surface"
                           min="0"
                           autoFocus
                         />
-                        <button onClick={() => updateViews(report.id)} className="text-[#6bfb9a] text-xs">✓</button>
-                        <button onClick={() => { setViewEditId(null); setViewValue(''); }} className="text-white/40 text-xs">✕</button>
+                        <button onClick={() => updateViews(report.id)} className="text-primary text-xs">✓</button>
+                        <button onClick={() => { setViewEditId(null); setViewValue(''); }} className="text-on-surface-variant/70 text-xs">✕</button>
                       </div>
                     ) : (
                       <button
                         onClick={() => { setViewEditId(report.id); setViewValue(report.views || 0); }}
-                        className="text-sm text-white/70 hover:text-[#6bfb9a] transition-colors"
+                        className="text-sm text-on-surface-variant hover:text-primary transition-colors"
                       >
                         👁️ {(report.views || 0).toLocaleString()} views
                       </button>
@@ -260,7 +260,7 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
           </div>
         ) : (
           <GlassCard>
-            <div className="text-center py-12 text-white/30">
+            <div className="text-center py-12 text-on-surface-variant/50">
               <div className="text-4xl mb-3">📭</div>
               <p>Belum ada arsip konten untuk periode ini</p>
             </div>
@@ -277,10 +277,10 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
                 disabled={!link.url}
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                   link.active
-                    ? 'bg-[#6bfb9a]/20 text-[#6bfb9a] font-medium'
+                    ? 'bg-primary/10 text-primary font-medium'
                     : link.url
-                    ? 'bg-white/5 text-white/60 hover:bg-white/10'
-                    : 'bg-white/5 text-white/20 cursor-not-allowed'
+                    ? 'bg-surface-container-low/50 text-on-surface-variant hover:bg-surface-container-high'
+                    : 'bg-surface-container-low/50 text-on-surface-variant/30 cursor-not-allowed'
                 }`}
                 dangerouslySetInnerHTML={{ __html: link.label }}
               />

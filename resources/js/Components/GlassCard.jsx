@@ -2,15 +2,15 @@ import React from 'react';
 
 export default function GlassCard({ title, children, footerAction, className = '' }) {
   return (
-    <section className={`clay p-6 ${className}`} aria-label={title || undefined}>
+    <section className={`bg-white/80 backdrop-blur-md border border-outline-variant/50 shadow-sm rounded-xl p-6 ${className}`} aria-label={title || undefined}>
       {title && (
-        <h3 className="heading-neon text-lg font-bold text-white mb-4 pb-2 border-b border-white/10">
+        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-4 pb-3 border-b border-outline-variant/30">
           {title}
         </h3>
       )}
-      <div className="text-white/80">{children}</div>
+      <div className="text-on-surface">{children}</div>
       {footerAction && (
-        <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
+        <div className="mt-4 pt-3 border-t border-outline-variant/30 flex justify-end">
           {footerAction}
         </div>
       )}

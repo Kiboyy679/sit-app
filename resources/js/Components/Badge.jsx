@@ -1,16 +1,17 @@
 import React from 'react';
 
-export default function Badge({ children, variant = 'default' }) {
+export default function Badge({ children, variant = 'default', className = '' }) {
   const variants = {
-    default: 'bg-white/10 text-white/80',
-    success: 'bg-green-500/20 text-green-400',
-    warning: 'bg-yellow-500/20 text-yellow-400',
-    danger: 'bg-red-500/20 text-red-400',
-    info: 'bg-blue-500/20 text-blue-400',
-    accent: 'bg-[var(--accent)]/20 text-[var(--accent)]',
+    default: 'bg-surface-container-high text-on-surface-variant',
+    primary: 'bg-primary/10 text-primary',
+    success: 'bg-secondary/10 text-secondary',
+    danger: 'bg-error/10 text-error',
+    warning: 'bg-tertiary/10 text-tertiary',
+    info: 'bg-primary/10 text-primary',
+    neon: 'bg-primary/10 text-primary',
   };
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variants[variant] || variants.default}`} role="status">
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wider ${variants[variant] || variants.default} ${className}`}>
       {children}
     </span>
   );

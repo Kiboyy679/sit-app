@@ -83,8 +83,8 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
         {/* Header + Stats */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Pelaporan FYP</h1>
-            <p className="text-white/50 text-sm">Postingan ke platform sosial media</p>
+            <h1 className="text-2xl font-bold text-on-surface">Pelaporan FYP</h1>
+            <p className="text-on-surface-variant text-sm">Postingan ke platform sosial media</p>
           </div>
           <Button onClick={() => setShowSubmit(!showSubmit)}>
             {showSubmit ? 'Tutup' : '+ Kirim Laporan'}
@@ -94,16 +94,16 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Menunggu', value: stats.pending, color: 'text-yellow-400', icon: '⏳' },
-            { label: 'Disetujui', value: stats.approved, color: 'text-green-400', icon: '✅' },
-            { label: 'Ditolak', value: stats.rejected, color: 'text-red-400', icon: '❌' },
-            { label: 'Total Bulan Ini', value: stats.total, color: 'text-[#6bfb9a]', icon: '📊' },
+            { label: 'Menunggu', value: stats.pending, color: 'text-yellow-600', icon: '⏳' },
+            { label: 'Disetujui', value: stats.approved, color: 'text-secondary', icon: '✅' },
+            { label: 'Ditolak', value: stats.rejected, color: 'text-error', icon: '❌' },
+            { label: 'Total Bulan Ini', value: stats.total, color: 'text-primary', icon: '📊' },
           ].map((s, i) => (
-            <div key={i} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex items-center gap-3">
+            <div key={i} className="glass-panel border border-outline-variant/30 rounded-xl p-4 flex items-center gap-3">
               <span className="text-2xl">{s.icon}</span>
               <div>
                 <div className={`text-xl font-bold ${s.color}`}>{s.value}</div>
-                <div className="text-white/40 text-xs">{s.label}</div>
+                <div className="text-on-surface-variant/70 text-xs">{s.label}</div>
               </div>
             </div>
           ))}
@@ -125,33 +125,33 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Platform *</label>
+                  <label className="block text-sm text-on-surface-variant mb-1">Platform *</label>
                   <select
                     value={data.platform}
                     onChange={(e) => setData('platform', e.target.value)}
-                    className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white"
+                    className="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface"
                   >
                     {platforms.filter(p => p.value).map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Tema *</label>
+                  <label className="block text-sm text-on-surface-variant mb-1">Tema *</label>
                   <select
                     value={data.theme_id}
                     onChange={(e) => setData('theme_id', e.target.value)}
-                    className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white"
+                    className="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface"
                   >
                     <option value="">Pilih tema</option>
                     {themes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
-                  {errors.theme_id && <p className="text-xs text-red-400 mt-1">{errors.theme_id}</p>}
+                  {errors.theme_id && <p className="text-xs text-error mt-1">{errors.theme_id}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Jenis Postingan *</label>
+                  <label className="block text-sm text-on-surface-variant mb-1">Jenis Postingan *</label>
                   <select
                     value={data.post_type}
                     onChange={(e) => setData('post_type', e.target.value)}
-                    className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white"
+                    className="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface"
                   >
                     <option value="main">Postingan Utama</option>
                     <option value="reply">Balasan</option>
@@ -198,21 +198,21 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
           <select
             value={filterStatus}
             onChange={(e) => { setFilterStatus(e.target.value); applyFilter('status', e.target.value); }}
-            className="bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white text-sm"
+            className="bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface text-sm"
           >
             {statuses.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
           <select
             value={filterPlatform}
             onChange={(e) => { setFilterPlatform(e.target.value); applyFilter('platform', e.target.value); }}
-            className="bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white text-sm"
+            className="bg-surface-container-low/50 border border-outline-variant/50 rounded-lg px-3 py-2 text-on-surface text-sm"
           >
             {platforms.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
           </select>
 
           {isAdmin && selectedIds.length > 0 && (
             <div className="flex gap-2 ml-auto">
-              <span className="text-sm text-white/50 self-center">{selectedIds.length} dipilih</span>
+              <span className="text-sm text-on-surface-variant self-center">{selectedIds.length} dipilih</span>
               <Button size="sm" onClick={() => bulkReview('approved')}>
                 Setujui Semua
               </Button>
@@ -228,11 +228,11 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-left text-white/50">
+                <tr className="border-b border-outline-variant/30 text-left text-on-surface-variant">
                   {isAdmin && <th className="py-3 px-3 w-8">
                     <input type="checkbox" onChange={toggleSelectAll}
                       checked={reports.data.filter(r => r.status === 'pending').length > 0 && selectedIds.length === reports.data.filter(r => r.status === 'pending').length}
-                      className="rounded border-white/20"
+                      className="rounded border-outline-variant/50"
                     />
                   </th>}
                   <th className="py-3 px-3">URL / Platform</th>
@@ -247,27 +247,27 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
               </thead>
               <tbody>
                 {reports.data.map((report) => (
-                  <tr key={report.id} className={`border-b border-white/5 hover:bg-white/5 ${selectedIds.includes(report.id) ? 'bg-[#6bfb9a]/5' : ''}`}>
+                  <tr key={report.id} className={`border-b border-outline-variant/20 hover:bg-surface-container-low/50 ${selectedIds.includes(report.id) ? 'bg-primary/5' : ''}`}>
                     {isAdmin && (
                       <td className="py-3 px-3">
                         {report.status === 'pending' && (
                           <input type="checkbox" checked={selectedIds.includes(report.id)}
                             onChange={() => toggleSelect(report.id)}
-                            className="rounded border-white/20"
+                            className="rounded border-outline-variant/50"
                           />
                         )}
                       </td>
                     )}
                     <td className="py-3 px-3">
-                      <div className="text-white truncate max-w-xs">{report.original_url}</div>
-                      <div className="text-xs text-white/40 capitalize">{report.platform}</div>
+                      <div className="text-on-surface truncate max-w-xs">{report.original_url}</div>
+                      <div className="text-xs text-on-surface-variant/70 capitalize">{report.platform}</div>
                     </td>
                     <td className="py-3 px-3">
                       <Badge variant="neon">{report.theme?.name || '-'}</Badge>
                     </td>
-                    <td className="py-3 px-3 text-white/60 capitalize">{report.post_type}</td>
-                    <td className="py-3 px-3 text-right text-white">{(report.impressions || 0).toLocaleString()}</td>
-                    <td className="py-3 px-3 text-right text-white">{(report.engagements || 0).toLocaleString()}</td>
+                    <td className="py-3 px-3 text-on-surface-variant capitalize">{report.post_type}</td>
+                    <td className="py-3 px-3 text-right text-on-surface">{(report.impressions || 0).toLocaleString()}</td>
+                    <td className="py-3 px-3 text-right text-on-surface">{(report.engagements || 0).toLocaleString()}</td>
                     <td className="py-3 px-3">
                       <Badge variant={
                         report.status === 'approved' ? 'success' :
@@ -277,18 +277,18 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
                          report.status === 'rejected' ? 'Ditolak' : 'Menunggu'}
                       </Badge>
                       {report.engagement_exceeds_views && (
-                        <span className="ml-1 text-yellow-400" title="Interaksi melebihi penayangan">⚠️</span>
+                        <span className="ml-1 text-yellow-600" title="Interaksi melebihi penayangan">⚠️</span>
                       )}
                     </td>
-                    <td className="py-3 px-3 text-white/60 text-xs">{report.user?.name}</td>
+                    <td className="py-3 px-3 text-on-surface-variant text-xs">{report.user?.name}</td>
                     {isAdmin && (
                       <td className="py-3 px-3">
                         {report.status === 'pending' && (
                           <div className="flex gap-1">
                             <button onClick={() => reviewReport(report.id, 'approved')}
-                              className="text-green-400 hover:underline text-xs">✓</button>
+                              className="text-secondary hover:underline text-xs">✓</button>
                             <button onClick={() => reviewReport(report.id, 'rejected')}
-                              className="text-red-400 hover:underline text-xs">✕</button>
+                              className="text-error hover:underline text-xs">✕</button>
                           </div>
                         )}
                       </td>
@@ -298,7 +298,7 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
               </tbody>
             </table>
             {reports.data.length === 0 && (
-              <div className="text-center py-12 text-white/30">
+              <div className="text-center py-12 text-on-surface-variant/50">
                 <div className="text-4xl mb-3">📭</div>
                 <p>Belum ada laporan FYP</p>
               </div>
@@ -316,10 +316,10 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
                 disabled={!link.url}
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                   link.active
-                    ? 'bg-[#6bfb9a]/20 text-[#6bfb9a] font-medium'
+                    ? 'bg-primary/10 text-primary font-medium'
                     : link.url
-                    ? 'bg-white/5 text-white/60 hover:bg-white/10'
-                    : 'bg-white/5 text-white/20 cursor-not-allowed'
+                    ? 'bg-surface-container-low/50 text-on-surface-variant hover:bg-surface-container-high'
+                    : 'bg-surface-container-low/50 text-on-surface-variant/30 cursor-not-allowed'
                 }`}
                 dangerouslySetInnerHTML={{ __html: link.label }}
               />

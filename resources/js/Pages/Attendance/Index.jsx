@@ -54,8 +54,8 @@ export default function AttendanceIndex({ attendances, summary, month, users }) 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Kehadiran Karyawan</h1>
-            <p className="text-white/50 text-sm">Rekap kehadiran bulanan</p>
+            <h1 className="text-2xl font-bold text-on-surface">Kehadiran Karyawan</h1>
+            <p className="text-on-surface-variant text-sm">Rekap kehadiran bulanan</p>
           </div>
           <div className="flex items-center gap-2">
             {isAdmin && (
@@ -68,26 +68,26 @@ export default function AttendanceIndex({ attendances, summary, month, users }) 
 
         {/* Month Navigation */}
         <div className="flex items-center justify-center gap-4">
-          <button onClick={() => changeMonth(-1)} className="text-white/50 hover:text-white text-lg">◀</button>
-          <span className="text-white font-semibold text-lg">
+          <button onClick={() => changeMonth(-1)} className="text-on-surface-variant hover:text-on-surface text-lg">◀</button>
+          <span className="text-on-surface font-semibold text-lg">
             {new Date(year, mon - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
           </span>
-          <button onClick={() => changeMonth(1)} className="text-white/50 hover:text-white text-lg">▶</button>
+          <button onClick={() => changeMonth(1)} className="text-on-surface-variant hover:text-on-surface text-lg">▶</button>
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Hadir', value: totalHadir, color: 'text-green-400', icon: '✅' },
+            { label: 'Total Hadir', value: totalHadir, color: 'text-secondary', icon: '✅' },
             { label: 'Total Izin', value: Object.values(summary).reduce((s, v) => s + v.izin, 0), color: 'text-blue-400', icon: '📝' },
-            { label: 'Total Sakit', value: Object.values(summary).reduce((s, v) => s + v.sakit, 0), color: 'text-yellow-400', icon: '🤒' },
-            { label: 'Total Alfa', value: totalAlfa, color: 'text-red-400', icon: '❌' },
+            { label: 'Total Sakit', value: Object.values(summary).reduce((s, v) => s + v.sakit, 0), color: 'text-yellow-600', icon: '🤒' },
+            { label: 'Total Alfa', value: totalAlfa, color: 'text-error', icon: '❌' },
           ].map((s, i) => (
-            <div key={i} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex items-center gap-3">
+            <div key={i} className="glass-panel border border-outline-variant/30 rounded-xl p-4 flex items-center gap-3">
               <span className="text-2xl">{s.icon}</span>
               <div>
                 <div className={`text-xl font-bold ${s.color}`}>{s.value}</div>
-                <div className="text-white/40 text-xs">{s.label}</div>
+                <div className="text-on-surface-variant/70 text-xs">{s.label}</div>
               </div>
             </div>
           ))}
@@ -97,7 +97,7 @@ export default function AttendanceIndex({ attendances, summary, month, users }) 
         <GlassCard title="Kalender Kehadiran">
           <div className="grid grid-cols-7 gap-1 text-center">
             {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map((d) => (
-              <div key={d} className="text-xs text-white/40 py-2 font-medium">{d}</div>
+              <div key={d} className="text-xs text-on-surface-variant/70 py-2 font-medium">{d}</div>
             ))}
             {calendarDays.map((day, idx) => {
               if (!day) return <div key={`empty-${idx}`} />;
@@ -107,9 +107,9 @@ export default function AttendanceIndex({ attendances, summary, month, users }) 
 
               return (
                 <div key={day} className={`aspect-square rounded-lg p-1 border text-xs ${
-                  isToday ? 'border-[#6bfb9a] bg-[#6bfb9a]/5' : 'border-white/5 bg-white/3'
+                  isToday ? 'border-primary bg-primary/5' : 'border-outline-variant/20 bg-white/3'
                 }`}>
-                  <div className={`text-xs mb-0.5 ${isToday ? 'text-[#6bfb9a] font-bold' : 'text-white/50'}`}>{day}</div>
+                  <div className={`text-xs mb-0.5 ${isToday ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>{day}</div>
                   <div className="space-y-0.5">
                     {dayAttendances.slice(0, 3).map((a) => (
                       <div key={a.id} className="text-[9px] truncate" title={`${a.user?.name}: ${statusLabels[a.status]}`}>
@@ -117,7 +117,7 @@ export default function AttendanceIndex({ attendances, summary, month, users }) 
                       </div>
                     ))}
                     {dayAttendances.length > 3 && (
-                      <div className="text-[9px] text-white/30">+{dayAttendances.length - 3}</div>
+                      <div className="text-[9px] text-on-surface-variant/50">+{dayAttendances.length - 3}</div>
                     )}
                   </div>
                 </div>
@@ -132,7 +132,7 @@ export default function AttendanceIndex({ attendances, summary, month, users }) 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 text-left text-white/50">
+                  <tr className="border-b border-outline-variant/30 text-left text-on-surface-variant">
                     <th className="py-3 px-3">Nama</th>
                     <th className="py-3 px-3 text-center">Hadir</th>
                     <th className="py-3 px-3 text-center">Izin</th>
@@ -146,21 +146,21 @@ export default function AttendanceIndex({ attendances, summary, month, users }) 
                     const total = s.hadir + s.izin + s.sakit + s.alfa;
                     const rate = total > 0 ? Math.round((s.hadir / total) * 100) : 0;
                     return (
-                      <tr key={id} className="border-b border-white/5 hover:bg-white/5">
-                        <td className="py-3 px-3 text-white">{s.name}</td>
-                        <td className="py-3 px-3 text-center text-green-400">{s.hadir}</td>
+                      <tr key={id} className="border-b border-outline-variant/20 hover:bg-surface-container-low/50">
+                        <td className="py-3 px-3 text-on-surface">{s.name}</td>
+                        <td className="py-3 px-3 text-center text-secondary">{s.hadir}</td>
                         <td className="py-3 px-3 text-center text-blue-400">{s.izin}</td>
-                        <td className="py-3 px-3 text-center text-yellow-400">{s.sakit}</td>
-                        <td className="py-3 px-3 text-center text-red-400">{s.alfa}</td>
+                        <td className="py-3 px-3 text-center text-yellow-600">{s.sakit}</td>
+                        <td className="py-3 px-3 text-center text-error">{s.alfa}</td>
                         <td className="py-3 px-3 text-center">
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-white/10 rounded-full h-2">
+                            <div className="flex-1 bg-surface-container-high rounded-full h-2">
                               <div
                                 className={`h-2 rounded-full ${rate >= 90 ? 'bg-green-400' : rate >= 70 ? 'bg-yellow-400' : 'bg-red-400'}`}
                                 style={{ width: `${rate}%` }}
                               />
                             </div>
-                            <span className={`text-xs font-medium ${rate >= 90 ? 'text-green-400' : rate >= 70 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            <span className={`text-xs font-medium ${rate >= 90 ? 'text-secondary' : rate >= 70 ? 'text-yellow-600' : 'text-error'}`}>
                               {rate}%
                             </span>
                           </div>

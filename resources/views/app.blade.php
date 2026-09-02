@@ -7,9 +7,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-  @vite(['resources/js/app.jsx', 'resources/css/app.css'])
+  <script>
+    // Set base URL for Ziggy & Inertia to use current browser origin
+    // This ensures AJAX requests go to the correct domain (e.g. gray-jay.slim.show)
+    // instead of localhost:8080 or https://login/
+    window._baseOrigin = window.location.origin;
+    window.Ziggy = window.Ziggy || {};
+    window.Ziggy.url = window.location.origin;
+  </script>
+  @vite(['resources/js/app.jsx'])
 </head>
 <body class="font-sans antialiased">
-  <div id="app" data-page="{{ json_encode($page) }}"></div>
+  @inertia
 </body>
 </html>

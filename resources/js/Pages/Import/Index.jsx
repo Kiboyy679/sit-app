@@ -26,8 +26,8 @@ export default function ImportIndex({ batches }) {
       <Head title="Import CSV" />
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Import Data CSV</h1>
-          <p className="text-white/50 text-sm">Unggah file CSV untuk impor data dalam jumlah besar</p>
+          <h1 className="text-2xl font-bold text-on-surface">Import Data CSV</h1>
+          <p className="text-on-surface-variant text-sm">Unggah file CSV untuk impor data dalam jumlah besar</p>
         </div>
 
         {/* Upload */}
@@ -38,7 +38,7 @@ export default function ImportIndex({ batches }) {
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
               className={`border-2 border-dashed rounded-xl p-10 text-center transition-all cursor-pointer ${
-                dragOver ? 'border-[#6bfb9a] bg-[#6bfb9a]/5' : 'border-white/15 hover:border-white/25'
+                dragOver ? 'border-primary bg-primary/5' : 'border-outline-variant/50 hover:border-outline-variant'
               }`}
               onClick={() => document.getElementById('csv-input').click()}
             >
@@ -46,17 +46,17 @@ export default function ImportIndex({ batches }) {
               <div className="text-4xl mb-3">📄</div>
               {data.csv_file ? (
                 <div>
-                  <p className="text-[#6bfb9a]">{data.csv_file.name}</p>
-                  <p className="text-xs text-white/40">{(data.csv_file.size / 1024).toFixed(1)} KB</p>
+                  <p className="text-primary">{data.csv_file.name}</p>
+                  <p className="text-xs text-on-surface-variant/70">{(data.csv_file.size / 1024).toFixed(1)} KB</p>
                 </div>
               ) : (
                 <div>
-                  <p className="text-white/60">Seret & lepas file CSV, atau <span className="text-[#6bfb9a]">klik untuk memilih</span></p>
-                  <p className="text-xs text-white/30 mt-1">Maks 10MB — Format .csv atau .txt</p>
+                  <p className="text-on-surface-variant">Seret & lepas file CSV, atau <span className="text-primary">klik untuk memilih</span></p>
+                  <p className="text-xs text-on-surface-variant/50 mt-1">Maks 10MB — Format .csv atau .txt</p>
                 </div>
               )}
             </div>
-            {errors.csv_file && <p className="text-sm text-red-400">{errors.csv_file}</p>}
+            {errors.csv_file && <p className="text-sm text-error">{errors.csv_file}</p>}
             <Button type="submit" disabled={processing || !data.csv_file}>
               {processing ? 'Mengunggah...' : 'Upload & Proses'}
             </Button>
@@ -69,7 +69,7 @@ export default function ImportIndex({ batches }) {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 text-left text-white/50">
+                  <tr className="border-b border-outline-variant/30 text-left text-on-surface-variant">
                     <th className="py-3 px-3">#</th>
                     <th className="py-3 px-3">File</th>
                     <th className="py-3 px-3">Status</th>
@@ -81,16 +81,16 @@ export default function ImportIndex({ batches }) {
                 </thead>
                 <tbody>
                   {batches.data.map((b, i) => (
-                    <tr key={b.id} className="border-b border-white/5 hover:bg-white/5">
-                      <td className="py-3 px-3 text-white/40">{i + 1}</td>
-                      <td className="py-3 px-3 text-white">{b.file_name}</td>
-                      <td className="py-3 px-3 capitalize text-white/60">{b.status}</td>
-                      <td className="py-3 px-3 text-white/60">{b.total_rows}</td>
-                      <td className="py-3 px-3 text-white/60">{b.valid_rows || '-'}</td>
-                      <td className="py-3 px-3 text-white/60">{b.anomaly_count || 0}</td>
+                    <tr key={b.id} className="border-b border-outline-variant/20 hover:bg-surface-container-low/50">
+                      <td className="py-3 px-3 text-on-surface-variant/70">{i + 1}</td>
+                      <td className="py-3 px-3 text-on-surface">{b.file_name}</td>
+                      <td className="py-3 px-3 capitalize text-on-surface-variant">{b.status}</td>
+                      <td className="py-3 px-3 text-on-surface-variant">{b.total_rows}</td>
+                      <td className="py-3 px-3 text-on-surface-variant">{b.valid_rows || '-'}</td>
+                      <td className="py-3 px-3 text-on-surface-variant">{b.anomaly_count || 0}</td>
                       <td className="py-3 px-3">
                         {b.status === 'committed' && (
-                          <button onClick={() => router.delete(route('import.destroy', b.id))} className="text-red-400 hover:underline text-xs">Hapus</button>
+                          <button onClick={() => router.delete(route('import.destroy', b.id))} className="text-error hover:underline text-xs">Hapus</button>
                         )}
                       </td>
                     </tr>

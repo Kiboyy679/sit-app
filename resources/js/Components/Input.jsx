@@ -1,20 +1,14 @@
 import React from 'react';
 
-export default function Input({ label, error, id, className = '', ...props }) {
-  const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+export default function Input({ label, error, className = '', ...props }) {
   return (
-    <div className={className}>
-      {label && (
-        <label htmlFor={inputId} className="block text-sm text-white/60 mb-1">{label}</label>
-      )}
+    <div>
+      {label && <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface mb-1">{label}</label>}
       <input
-        id={inputId}
-        className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white placeholder-white/30 focus:ring-2 focus:ring-[var(--accent)]/50 focus:border-[var(--accent)] outline-none transition-all"
-        aria-invalid={error ? 'true' : undefined}
-        aria-describedby={error ? inputId + '-error' : undefined}
+        className={`w-full h-10 px-3 bg-white border border-outline-variant/50 rounded-md text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:ring-1 focus:ring-primary transition-colors outline-none ${error ? 'border-error' : ''} ${className}`}
         {...props}
       />
-      {error && <p id={inputId + '-error'} className="mt-1 text-xs text-red-400" role="alert">{error}</p>}
+      {error && <p className="text-error text-xs mt-1">{error}</p>}
     </div>
   );
 }
