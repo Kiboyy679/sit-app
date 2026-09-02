@@ -79,8 +79,8 @@ RUN mkdir -p /var/log/supervisor
 # Create PHP-FPM socket directory
 RUN mkdir -p /var/run/php
 
-# Copy PHP-FPM pool config
-COPY docker/php-fpm.conf /etc/php/8.4/fpm/php-fpm.conf
+# Copy PHP-FPM pool config to default include directory
+COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Copy nginx config
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
