@@ -44,11 +44,8 @@ WORKDIR /var/www/html
 # Copy composer files first (for caching)
 COPY composer.json composer.lock ./
 
-# Copy artisan file first (needed for post-autoload-dump)
-COPY artisan ./
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+# Install PHP dependencies (skip scripts that need full app)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
 # Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
@@ -64,6 +61,9 @@ RUN npm run build
 
 # Generate app key if not exists
 RUN php artisan key:generate --force 2>/dev/null || true
+
+# Run post-autoload-dump scripts manually now that full app is copied
+RUN php artisan package:discover --ansi
 
 # Cache config
 RUN php artisan config:cache && \
