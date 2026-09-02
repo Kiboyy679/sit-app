@@ -76,6 +76,12 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Create supervisor log directory
 RUN mkdir -p /var/log/supervisor
 
+# Create PHP-FPM socket directory
+RUN mkdir -p /var/run/php
+
+# Copy PHP-FPM pool config
+COPY docker/php-fpm.conf /etc/php/8.4/fpm/php-fpm.conf
+
 # Copy nginx config
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
