@@ -44,6 +44,9 @@ WORKDIR /var/www/html
 # Copy composer files first (for caching)
 COPY composer.json composer.lock ./
 
+# Copy artisan file first (needed for post-autoload-dump)
+COPY artisan ./
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
