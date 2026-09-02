@@ -1,5 +1,5 @@
 # Base image
-FROM php:8.3-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -17,11 +17,12 @@ RUN apk add --no-cache \
     nodejs \
     npm \
     mysql-client \
-    postgresql-client
+    postgresql-client \
+    libpq-dev \
+    libzip-dev
 
 # Install PHP extensions
-RUN apk add --no-cache libpq-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     pdo_pgsql \
@@ -31,7 +32,8 @@ RUN apk add --no-cache libpq-dev \
     bcmath \
     gd \
     xml \
-    opcache
+    opcache \
+    zip
 
 # Get Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
