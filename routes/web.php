@@ -9,6 +9,7 @@ use App\Http\Controllers\{
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Cache\RateLimiting\Limit;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -27,7 +28,7 @@ Route::middleware(['auth', 'verified', 'throttle:content'])->prefix('content')->
     Route::put('/{report}/views', [ContentController::class, 'updateViews'])->name('content.updateViews');
 });
 RateLimiter::for('content', function () {
-    return \Illuminate\Http\Request::class . ':30,1';
+    return Limit::perMinute(30)->by('content');
 });
 
 // ── FYP (rate: 30/minute) ──
@@ -38,7 +39,7 @@ Route::middleware(['auth', 'verified', 'throttle:fyp'])->prefix('fyp')->group(fu
     Route::post('/bulk-review', [FypController::class, 'bulkReview'])->name('fyp.bulkReview');
 });
 RateLimiter::for('fyp', function () {
-    return \Illuminate\Http\Request::class . ':30,1';
+    return Limit::perMinute(30)->by('fyp');
 });
 
 // ── Izin ──
@@ -87,7 +88,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin', 'throttle:import'])->
     Route::delete('/{batch}', [ImportController::class, 'destroy'])->name('import.destroy');
 });
 RateLimiter::for('import', function () {
-    return \Illuminate\Http\Request::class . ':5,1';
+    return Limit::perMinute(5)->by('import');
 });
 
 // ── Admin: User Management ──
