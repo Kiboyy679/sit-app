@@ -27,7 +27,7 @@ class PerformanceController extends Controller
                 DB::raw('COALESCE(SUM(views),0) as total_views')
             )
             ->whereIn('user_id', $kIds)
-            ->where('submitted_at', 'like', "$period%")
+            ->where('period', $period)
             ->groupBy('user_id')
             ->get()
             ->keyBy('user_id');
