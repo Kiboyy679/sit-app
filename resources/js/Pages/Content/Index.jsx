@@ -86,12 +86,12 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
       <Head title="Arsip Konten" />
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-on-surface">Arsip Konten</h1>
-            <p className="text-on-surface-variant text-sm">Periode {period} &middot; {myCount} berkas diunggah</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-on-surface">Arsip Konten</h1>
+            <p className="text-on-surface-variant text-xs sm:text-sm">Periode {period} &middot; {myCount} berkas diunggah</p>
           </div>
-          <Button onClick={() => setShowUpload(!showUpload)}>
+          <Button onClick={() => setShowUpload(!showUpload)} className="w-full sm:w-auto">
             {showUpload ? 'Tutup' : '+ Unggah Konten'}
           </Button>
         </div>

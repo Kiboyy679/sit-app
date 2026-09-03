@@ -12,15 +12,16 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
         $month = $request->get('month', now()->format('Y-m'));
+        $monthNum = substr($month, 5, 2);
+        $yearNum = substr($month, 0, 4);
 
         $query = Attendance::with(['user', 'recorder']);
-        $query->whereMonth('date', substr($month, 5, 2))
-              ->whereYear('date', substr($month, 0, 4));
+        $query->whereMonth('date', $monthNum)
+              ->whereYear('date', $yearNum);
 
         if ($user->hasRole('karyawan')) {
             $query->where('user_id', $user->id);
         }
-
         if ($request->filled('user_id') && $user->hasRole(['super_admin', 'admin_absensi'])) {
             $query->where('user_id', $request->user_id);
         }
@@ -28,23 +29,35 @@ class AttendanceController extends Controller
 
         $attendances = $query->orderBy('date')->get();
 
-        // Monthly summary per user
-        $users = $user->hasRole(['super_admin', 'admin_absensi'])
-            ? User::where('is_active', true)->orderBy('name')->get()
-            : collect([$user]);
+        // Bulk summary — single query with GROUP BY instead of N×4
+        $isGlobalAdmin = $user->hasRole(['super_admin', 'admin_absensi']);
+        if ($isGlobalAdmin) {
+            $users = User::where('is_active', true)->orderBy('name')->get();
+        } else {
+            $users = collect([$user]);
+        }
+
+        $userIdList = $users->pluck('id')->toArray();
+
+        $rawSummary = Attendance::select('user_id', 'status', DB::raw('count(*) as cnt'))
+            ->whereMonth('date', $monthNum)
+            ->whereYear('date', $yearNum)
+            ->whereIn('user_id', $userIdList)
+            ->groupBy('user_id', 'status')
+            ->get()
+            ->groupBy('user_id');
 
         $summary = [];
         foreach ($users as $u) {
+            $rows = $rawSummary->get($u->id, collect());
+            $counts = [];
+            foreach ($rows as $r) $counts[$r->status] = $r->cnt;
             $summary[$u->id] = [
-                'name' => $u->name,
-                'hadir' => Attendance::where('user_id', $u->id)->whereMonth('date', substr($month, 5, 2))
-                    ->whereYear('date', substr($month, 0, 4))->where('status', 'hadir')->count(),
-                'izin' => Attendance::where('user_id', $u->id)->whereMonth('date', substr($month, 5, 2))
-                    ->whereYear('date', substr($month, 0, 4))->where('status', 'izin')->count(),
-                'sakit' => Attendance::where('user_id', $u->id)->whereMonth('date', substr($month, 5, 2))
-                    ->whereYear('date', substr($month, 0, 4))->where('status', 'sakit')->count(),
-                'alfa' => Attendance::where('user_id', $u->id)->whereMonth('date', substr($month, 5, 2))
-                    ->whereYear('date', substr($month, 0, 4))->where('status', 'alfa')->count(),
+                'name'   => $u->name,
+                'hadir'  => $counts['hadir'] ?? 0,
+                'izin'   => $counts['izin'] ?? 0,
+                'sakit'  => $counts['sakit'] ?? 0,
+                'alfa'   => $counts['alfa'] ?? 0,
             ];
         }
 
@@ -100,7 +113,7 @@ class AttendanceController extends Controller
         $csv = "Nama,Tanggal,Status,Flags\n";
         foreach ($attendances as $a) {
             $flags = $a->flags ? implode('; ', $a->flags) : '';
-            $csv .= '"' . $a->user->name . '","' . $a->date->format('Y-m-d') . '","' . $a->status . '","' . $flags . '"\n';
+            $csv .= '"' . $a->user->name . '","' . $a->date->format('Y-m-d') . '","' . $a->status . '","' . $flags . "\"\n";
         }
 
         return response($csv, 200, [

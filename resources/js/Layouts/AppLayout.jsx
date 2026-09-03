@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 
 const navItems = [
@@ -27,13 +27,50 @@ export default function AppLayout({ children }) {
 
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    // If admin role has many items, use hamburger; otherwise use bottom nav (max 5)
     const showHamburger = filteredNav.length > 5;
     const mobileNav = showHamburger ? [] : filteredNav.slice(0, 5);
+
+    // Lock body scroll when drawer is open
+    useEffect(() => {
+        if (drawerOpen) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        };
+    }, [drawerOpen]);
+
+    const closeDrawer = () => setDrawerOpen(false);
 
     const Icon = ({ name, className = '' }) => (
         <span className={`material-symbols-outlined ${className}`}>{name}</span>
     );
+
+    const NavLink = ({ item, onClick }) => {
+        const isActive = currentPath.startsWith(item.href);
+        return (
+            <Link
+                href={item.href}
+                onClick={onClick}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm font-medium
+                    ${isActive
+                        ? 'text-primary font-bold bg-primary/5'
+                        : 'text-on-surface-variant hover:bg-primary/5'
+                    }`}
+            >
+                <Icon name={item.icon} className="text-[20px]" />
+                <span>{item.label}</span>
+            </Link>
+        );
+    };
 
     return (
         <div className="min-h-screen bg-background flex font-body-md">
@@ -56,23 +93,9 @@ export default function AppLayout({ children }) {
                 </div>
 
                 <nav className="flex-1 flex flex-col gap-1 mt-4 px-2 overflow-y-auto">
-                    {filteredNav.map(item => {
-                        const isActive = currentPath.startsWith(item.href);
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm font-medium
-                                    ${isActive
-                                        ? 'text-primary font-bold bg-primary/5 border-r-4 border-primary'
-                                        : 'text-on-surface-variant hover:bg-primary/5 border-r-4 border-transparent'
-                                    }`}
-                            >
-                                <Icon name={item.icon} className="text-[20px]" />
-                                <span>{item.label}</span>
-                            </Link>
-                        );
-                    })}
+                    {filteredNav.map(item => (
+                        <NavLink key={item.href} item={item} />
+                    ))}
                 </nav>
 
                 <div className="px-4 mt-auto">
@@ -91,7 +114,12 @@ export default function AppLayout({ children }) {
             {/* ===== MOBILE DRAWER OVERLAY ===== */}
             {drawerOpen && (
                 <div className="md:hidden fixed inset-0 z-[60]">
-                    <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/40 transition-opacity"
+                        onClick={closeDrawer}
+                    />
+                    {/* Drawer */}
                     <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl flex flex-col animate-slide-in">
                         <div className="px-5 py-5 border-b border-outline-variant/50 flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -103,30 +131,15 @@ export default function AppLayout({ children }) {
                                     <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-semibold">Monitoring Kinerja</p>
                                 </div>
                             </div>
-                            <button onClick={() => setDrawerOpen(false)} className="p-1 rounded-lg hover:bg-neutral-100">
+                            <button onClick={closeDrawer} className="p-2 rounded-lg hover:bg-neutral-100">
                                 <Icon name="close" className="text-[22px] text-on-surface-variant" />
                             </button>
                         </div>
 
                         <nav className="flex-1 flex flex-col gap-1 mt-3 px-3 overflow-y-auto">
-                            {filteredNav.map(item => {
-                                const isActive = currentPath.startsWith(item.href);
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        onClick={() => setDrawerOpen(false)}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm font-medium
-                                            ${isActive
-                                                ? 'text-primary font-bold bg-primary/5'
-                                                : 'text-on-surface-variant hover:bg-primary/5'
-                                            }`}
-                                    >
-                                        <Icon name={item.icon} className="text-[20px]" />
-                                        <span>{item.label}</span>
-                                    </Link>
-                                );
-                            })}
+                            {filteredNav.map(item => (
+                                <NavLink key={item.href} item={item} onClick={closeDrawer} />
+                            ))}
                         </nav>
 
                         <div className="px-4 py-4 border-t border-outline-variant/50">
@@ -150,7 +163,7 @@ export default function AppLayout({ children }) {
                     {showHamburger && (
                         <button
                             onClick={() => setDrawerOpen(true)}
-                            className="md:hidden p-1.5 rounded-lg hover:bg-neutral-100 transition-colors"
+                            className="md:hidden p-2 rounded-lg hover:bg-neutral-100 transition-colors"
                         >
                             <Icon name="menu" className="text-[24px] text-on-surface" />
                         </button>

@@ -11,47 +11,99 @@ class PerformanceController extends Controller
     public function index(Request $request)
     {
         $period = $request->get('period', now()->format('Y-m'));
-        $prevPeriod = now()->subMonth()->format('Y-m');
+        $monthNum = substr($period, 5, 2);
+        $yearNum  = substr($period, 0, 4);
 
-        // ── Rekap per karyawan ──
         $karyawans = User::where('is_active', true)
             ->whereNull('employee_code')
             ->orderBy('name')
             ->get();
+        $kIds = $karyawans->pluck('id')->toArray();
 
-        $rekap = $karyawans->map(function ($k) use ($period, $prevPeriod) {
-            $contentCount = ContentReport::where('user_id', $k->id)->where('period', $period)->sum('file_count');
-            $totalViews = ContentReport::where('user_id', $k->id)->where('period', $period)->sum('views');
-            $fypApproved = FypReport::where('user_id', $k->id)->where('status', 'approved')
-                ->whereMonth('created_at', substr($period, 5, 2))->whereYear('created_at', substr($period, 0, 4))->count();
-            $fypPending = FypReport::where('user_id', $k->id)->where('status', 'pending')->count();
-            $fypRejected = FypReport::where('user_id', $k->id)->where('status', 'rejected')
-                ->whereMonth('created_at', substr($period, 5, 2))->whereYear('created_at', substr($period, 0, 4))->count();
-            $hadir = Attendance::where('user_id', $k->id)->whereMonth('date', substr($period, 5, 2))
-                ->whereYear('date', substr($period, 0, 4))->where('status', 'hadir')->count();
-            $alfa = Attendance::where('user_id', $k->id)->whereMonth('date', substr($period, 5, 2))
-                ->whereYear('date', substr($period, 0, 4))->where('status', 'alfa')->count();
-            $leavesPending = LeaveRequest::where('user_id', $k->id)->where('status', 'pending')->count();
+        // ── Bulk content stats ──
+        $contentStats = ContentReport::select(
+                'user_id',
+                DB::raw('COALESCE(SUM(file_count),0) as content_count'),
+                DB::raw('COALESCE(SUM(view_count),0) as total_views')
+            )
+            ->whereIn('user_id', $kIds)
+            ->where('submitted_at', 'like', "$period%")
+            ->groupBy('user_id')
+            ->get()
+            ->keyBy('user_id');
 
-            // Skor kinerja sederhana (0-100)
-            $contentScore = min($contentCount * 2, 40); // max 40 dari konten
-            $viewsScore = min(floor($totalViews / 1000) * 5, 30); // max 30 dari views
-            $fypScore = min($fypApproved * 3, 20); // max 20 dari FYP
-            $absenScore = ($hadir + $alfa) > 0 ? round(($hadir / ($hadir + $alfa)) * 10, 0) : 10; // max 10 dari absensi
+        // ── Bulk FYP stats ──
+        $fypStats = FypReport::select(
+                'user_id', 'status',
+                DB::raw('count(*) as cnt')
+            )
+            ->whereIn('user_id', $kIds)
+            ->whereMonth('created_at', $monthNum)
+            ->whereYear('created_at', $yearNum)
+            ->groupBy('user_id', 'status')
+            ->get()
+            ->groupBy('user_id');
+
+        // ── Bulk attendance stats ──
+        $attStats = Attendance::select(
+                'user_id', 'status',
+                DB::raw('count(*) as cnt')
+            )
+            ->whereIn('user_id', $kIds)
+            ->whereMonth('date', $monthNum)
+            ->whereYear('date', $yearNum)
+            ->groupBy('user_id', 'status')
+            ->get()
+            ->groupBy('user_id');
+
+        // ── Bulk leave pending ──
+        $leavePending = LeaveRequest::select('user_id', DB::raw('count(*) as cnt'))
+            ->whereIn('user_id', $kIds)
+            ->where('status', 'pending')
+            ->groupBy('user_id')
+            ->pluck('cnt', 'user_id');
+
+        // ── Build rekap ──
+        $rekap = $karyawans->map(function ($k) use ($contentStats, $fypStats, $attStats, $leavePending) {
+            $cs = $contentStats->get($k->id);
+            $contentCount = $cs->content_count ?? 0;
+            $totalViews   = $cs->total_views ?? 0;
+
+            $fRows = $fypStats->get($k->id, collect());
+            $fypApproved = 0; $fypPending = 0; $fypRejected = 0;
+            foreach ($fRows as $fr) {
+                if ($fr->status === 'approved') $fypApproved = $fr->cnt;
+                elseif ($fr->status === 'pending')  $fypPending = $fr->cnt;
+                elseif ($fr->status === 'rejected') $fypRejected = $fr->cnt;
+            }
+
+            $aRows = $attStats->get($k->id, collect());
+            $hadir = 0; $alfa = 0;
+            foreach ($aRows as $ar) {
+                if ($ar->status === 'hadir') $hadir = $ar->cnt;
+                elseif ($ar->status === 'alfa') $alfa = $ar->cnt;
+            }
+
+            $leavesPending = $leavePending->get($k->id, 0);
+
+            $contentScore = min($contentCount * 2, 40);
+            $viewsScore   = min(floor($totalViews / 1000) * 5, 30);
+            $fypScore     = min($fypApproved * 3, 20);
+            $absenScore   = ($hadir + $alfa) > 0 ? round(($hadir / ($hadir + $alfa)) * 10, 0) : 10;
             $score = $contentScore + $viewsScore + $fypScore + $absenScore;
 
             return [
-                'name' => $k->name,
-                'unit' => $k->unit,
+                'name'          => $k->name,
+                'unit'          => $k->unit,
                 'content_count' => $contentCount,
-                'total_views' => $totalViews,
-                'fyp_approved' => $fypApproved,
-                'fyp_pending' => $fypPending,
-                'fyp_rejected' => $fypRejected,
-                'hadir' => $hadir,
-                'alfa' => $alfa,
-                'leaves_pending' => $leavesPending,
-                'score' => $score,
+                'total_views'   => $totalViews,
+                'fyp_approved'  => $fypApproved,
+                'fyp_pending'   => $fypPending,
+                'fyp_rejected'  => $fypRejected,
+                'hadir'         => $hadir,
+                'alfa'          => $alfa,
+                'leaves_pending'=> $leavesPending,
+                'score'         => $score,
             ];
         })->sortByDesc('score')->values();
 
@@ -61,19 +113,29 @@ class PerformanceController extends Controller
             ->orderByDesc('usage_count')
             ->get();
 
-        // ── Status FYP ──
+        // ── Status FYP (bulk) ──
+        $fypTotals = FypReport::select('status', DB::raw('count(*) as cnt'))
+            ->whereMonth('created_at', $monthNum)
+            ->whereYear('created_at', $yearNum)
+            ->groupBy('status')
+            ->pluck('cnt', 'status');
         $fypStatus = [
-            'approved' => FypReport::whereMonth('created_at', substr($period, 5, 2))->whereYear('created_at', substr($period, 0, 4))->where('status', 'approved')->count(),
-            'pending' => FypReport::whereMonth('created_at', substr($period, 5, 2))->whereYear('created_at', substr($period, 0, 4))->where('status', 'pending')->count(),
-            'rejected' => FypReport::whereMonth('created_at', substr($period, 5, 2))->whereYear('created_at', substr($period, 0, 4))->where('status', 'rejected')->count(),
+            'approved' => $fypTotals->get('approved', 0),
+            'pending'  => $fypTotals->get('pending', 0),
+            'rejected' => $fypTotals->get('rejected', 0),
         ];
 
-        // ── Kehadiran bulanan ──
+        // ── Kehadiran bulanan (bulk) ──
+        $attTotals = Attendance::select('status', DB::raw('count(*) as cnt'))
+            ->whereMonth('date', $monthNum)
+            ->whereYear('date', $yearNum)
+            ->groupBy('status')
+            ->pluck('cnt', 'status');
         $attendanceSummary = [
-            'hadir' => Attendance::whereMonth('date', substr($period, 5, 2))->whereYear('date', substr($period, 0, 4))->where('status', 'hadir')->count(),
-            'izin' => Attendance::whereMonth('date', substr($period, 5, 2))->whereYear('date', substr($period, 0, 4))->where('status', 'izin')->count(),
-            'sakit' => Attendance::whereMonth('date', substr($period, 5, 2))->whereYear('date', substr($period, 0, 4))->where('status', 'sakit')->count(),
-            'alfa' => Attendance::whereMonth('date', substr($period, 5, 2))->whereYear('date', substr($period, 0, 4))->where('status', 'alfa')->count(),
+            'hadir' => $attTotals->get('hadir', 0),
+            'izin'  => $attTotals->get('izin', 0),
+            'sakit' => $attTotals->get('sakit', 0),
+            'alfa'  => $attTotals->get('alfa', 0),
         ];
 
         // ── Aktivitas 7 hari ──
