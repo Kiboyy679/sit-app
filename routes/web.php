@@ -1,139 +1,178 @@
 <?php
 
-use App\Http\Controllers\{
-    UserController, AliasController, ThemeController,
-    DashboardController, ContentController, FypController,
-    LeaveController, AttendanceController, PerformanceController, AuditController,
-    ImportController, IdentityController, ArchiveController
-};
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Artisan;
 
-Route::get('/', fn() => redirect()->route('login'));
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])->name('dashboard');
-
-// ── Arsip Konten (rate: 30/minute) ──
-Route::middleware(['auth', 'verified', 'throttle:content'])->prefix('content')->group(function () {
-    Route::get('/', [ContentController::class, 'index'])->name('content.index');
-    Route::post('/', [ContentController::class, 'store'])->name('content.store');
-    Route::put('/{report}/views', [ContentController::class, 'updateViews'])->name('content.updateViews');
-});
-RateLimiter::for('content', function (\Illuminate\Http\Request $request) {
-    return \Illuminate\Cache\RateLimiting\Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
-});
-
-// ── FYP (rate: 30/minute) ──
-Route::middleware(['auth', 'verified', 'throttle:fyp'])->prefix('fyp')->group(function () {
-    Route::get('/', [FypController::class, 'index'])->name('fyp.index');
-    Route::post('/', [FypController::class, 'store'])->name('fyp.store');
-    Route::put('/{report}/review', [FypController::class, 'review'])->name('fyp.review');
-    Route::post('/bulk-review', [FypController::class, 'bulkReview'])->name('fyp.bulkReview');
-});
-RateLimiter::for('fyp', function (\Illuminate\Http\Request $request) {
-    return \Illuminate\Cache\RateLimiting\Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
-});
-
-// ── Izin ──
-Route::middleware(['auth', 'verified'])->prefix('leave')->group(function () {
-    Route::get('/', [LeaveController::class, 'index'])->name('leave.index');
-    Route::post('/', [LeaveController::class, 'store'])->name('leave.store');
-    Route::put('/{leave}/review', [LeaveController::class, 'review'])->name('leave.review');
-});
-
-// ── Kehadiran ──
-Route::middleware(['auth', 'verified'])->prefix('attendance')->group(function () {
-    Route::get('/', [AttendanceController::class, 'index'])->name('attendance.index');
-    Route::post('/', [AttendanceController::class, 'store'])->name('attendance.store');
-    Route::get('/export', [AttendanceController::class, 'export'])->name('attendance.export');
-});
-
-// ── Laporan Kinerja (super_admin) ──
-Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('performance')->group(function () {
-    Route::get('/', [PerformanceController::class, 'index'])->name('performance.index');
-});
-
-// ── Jejak Audit (super_admin) ──
-Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('audit')->group(function () {
-    Route::get('/', [AuditController::class, 'index'])->name('audit.index');
-});
-
-// ── Manajemen Identitas (super_admin) ──
-Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('identity')->group(function () {
-    Route::get('/', [IdentityController::class, 'index'])->name('identity.index');
-    Route::post('/', [IdentityController::class, 'store'])->name('identity.store');
-    Route::put('/{identity}', [IdentityController::class, 'update'])->name('identity.update');
-    Route::delete('/{identity}', [IdentityController::class, 'destroy'])->name('identity.destroy');
-    Route::get('/{identity}/detail', [IdentityController::class, 'detail'])->name('identity.detail');
-    Route::post('/{identity}/record', [IdentityController::class, 'storeRecord'])->name('identity.storeRecord');
-    Route::post('/merge', [IdentityController::class, 'merge'])->name('identity.merge');
-});
-
-// ── Import CSV (super_admin, rate: 5/minute) ──
-Route::middleware(['auth', 'verified', 'role:super_admin', 'throttle:import'])->prefix('import')->group(function () {
-    Route::get('/', [ImportController::class, 'index'])->name('import.index');
-    Route::post('/upload', [ImportController::class, 'upload'])->name('import.upload');
-    Route::get('/preview/{batch}', [ImportController::class, 'preview'])->name('import.preview');
-    Route::post('/process/{batch}', [ImportController::class, 'process'])->name('import.process');
-    Route::post('/skip/{batch}', [ImportController::class, 'skipRow'])->name('import.skipRow');
-    Route::post('/commit/{batch}', [ImportController::class, 'commit'])->name('import.commit');
-    Route::delete('/{batch}', [ImportController::class, 'destroy'])->name('import.destroy');
-});
-RateLimiter::for('import', function (\Illuminate\Http\Request $request) {
-    return \Illuminate\Cache\RateLimiting\Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
-});
-
-// ── Admin: User Management ──
-Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('admin')->group(function () {
-    Route::get('users', [UserController::class, 'index'])->name('users.index');
-    Route::post('users', [UserController::class, 'store'])->name('users.store');
-    Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::put('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
-    Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-    Route::get('aliases', [AliasController::class, 'index'])->name('aliases.index');
-    Route::post('aliases', [AliasController::class, 'store'])->name('aliases.store');
-    Route::delete('aliases/{alias}', [AliasController::class, 'destroy'])->name('aliases.destroy');
-});
-
-// ── Admin Konten: Theme Management ──
-Route::middleware(['auth', 'verified', 'role:super_admin|admin_konten'])->prefix('admin')->group(function () {
-    Route::get('themes', [ThemeController::class, 'index'])->name('themes.index');
-    Route::post('themes', [ThemeController::class, 'store'])->name('themes.store');
-    Route::put('themes/{theme}', [ThemeController::class, 'update'])->name('themes.update');
-    Route::post('themes/{theme}/merge', [ThemeController::class, 'merge'])->name('themes.merge');
-    Route::post('themes/{theme}/approve', [ThemeController::class, 'approve'])->name('themes.approve');
-    Route::delete('themes/{theme}', [ThemeController::class, 'destroy'])->name('themes.destroy');
-});
-
-// ── Arsip Mingguan (super_admin) ──
-Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('archive')->group(function () {
-    Route::get('/', [ArchiveController::class, 'index'])->name('archive.index');
-    Route::post('/generate', [ArchiveController::class, 'generate'])->name('archive.generate');
-    Route::get('/verify/{period}', [ArchiveController::class, 'verify'])->name('archive.verify');
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
 });
 
 require __DIR__.'/auth.php';
 
 // TEMPORARY: Remove after first run
 Route::get('/migrate-now', function () {
-    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-    return response(\Illuminate\Support\Facades\Artisan::output(), 200)->header('Content-Type', 'text/plain');
+    Artisan::call('migrate', ['--force' => true]);
+    return response(Artisan::output(), 200)->header('Content-Type', 'text/plain');
 });
 
 Route::get('/seed-now', function () {
-    // Create a super admin user directly
-    $user = \App\Models\User::firstOrCreate(
-        ['email' => 'super@sit-app.local'],
-        [
-            'name' => 'Super Admin',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
-            'unit' => 'IT',
-            'is_active' => true,
-        ]
-    );
-    // Create role if not exists
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super_admin']);
-    $user->assignRole('super_admin');
-    return response("User created: super@sit-app.local / password123", 200)->header('Content-Type', 'text/plain');
+    $step = request('step', 'all');
+    $start = microtime(true);
+    $output = [];
+
+    if ($step === 'all' || $step === 'roles') {
+        // 1. Permissions & roles
+        $permissionNames = ['manage_users','manage_content','review_fyp','manage_attendance','manage_import','view_reports','view_audit','manage_archive'];
+        foreach ($permissionNames as $p) \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $p]);
+        $roles = [
+            'super_admin' => $permissionNames, 'admin_konten' => ['manage_content','view_reports','manage_archive'],
+            'admin_fyp' => ['review_fyp','view_reports'], 'admin_absensi' => ['manage_attendance','view_reports'], 'karyawan' => [],
+        ];
+        foreach ($roles as $name => $perms) { $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => $name]); $role->syncPermissions($perms); }
+        $output[] = "Roles OK";
+
+        // 2. Admin users
+        $adminUsers = [];
+        foreach ([
+            ['Super Admin','super@sit-app.local','super_admin','IT'],
+            ['Admin Konten','konten@sit-app.local','admin_konten','Konten Kreatif'],
+            ['Admin FYP','fyp@sit-app.local','admin_fyp','Social Media'],
+            ['Admin Absensi','absensi@sit-app.local','admin_absensi','HR'],
+        ] as [$name,$email,$role,$unit]) {
+            $user = \App\Models\User::firstOrCreate(['email'=>$email], ['name'=>$name,'password'=>bcrypt('password123'),'unit'=>$unit,'is_active'=>true]);
+            if (!$user->hasRole($role)) $user->assignRole($role);
+            $adminUsers[$role] = $user;
+        }
+        $output[] = "Admins OK";
+    }
+
+    // 3. Karyawan (step=karyawan or all)
+    if ($step === 'all' || $step === 'karyawan') {
+        $units = ['Konten Kreatif','Social Media','Copywriting','Design','Video Produksi','Kampanye','Data Analyst','Digital Marketing'];
+        $firstNames = ['Rina','Budi','Dewi','Ahmad','Siti','Rizki','Maya','Dimas','Fitri','Reza','Anisa','Fajar','Luthfi','Putri','Yoga','Nabila','Irfan','Citra','Bayu','Ayu','Dian','Rudi','Hendra','Lia','Tono','Wati','Agus','Eka','Joko','Kartika','Lestari','Mila','Nana','Omar','Pratama','Qory','Rani','Sari','Umi','Vina','Winda','Xena','Yanti','Zainal','Arief','Bella','Cika','Dina','Edo','Farah','Gilang','Hana','Indah','Juli','Kiki','Lulu','Mita','Nisa','Oscar','Pipi','Rara','Sinta','Tari','Ucup','Vera','Wulan','Zara','Aldo','Bima','Doni','Ella','Fadil','Gita','Hari','Ika','Jefri','Kania','Leo','Mira','Nanda','Olga','Putra','Tono','Ahmad','Budi','Cici','Dedi','Eka','Aldo','Bima','Citra','Doni','Ella','Fadil','Gita','Hari','Ika','Jefri'];
+        $lastNames = ['Sari','Santoso','Lestari','Fauzi','Nurhaliza','Pratama','Putri','Aditya','Handayani','Ramadhan','Rahmawati','Nugroho','Hidayat','Amelia','Saputra','Zahrani','Hakim','Dewi','Firmansyah','Permata','Wijaya','Kusuma','Anggraini','Wibowo','Sulistyaningsih','Purnama','Setiawan','Haryanto','Susanto','Purwanti','Widodo','Hermawan','Marlina','Syaputra','Utami','Azzahra','Pramudya','Ningtias','Halim','Rahayu','Maulana','Fitriani','Suryadi','Damayanti','Prasetyo','Rahmania','Ardiansyah','Lubis','Siregar','Tampubolon'];
+        $existing = \App\Models\User::where('roles.name','karyawan')->join('model_has_roles','users.id','=','model_has_roles.model_id')->join('roles','model_has_roles.role_id','=','roles.id')->count();
+        $karRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'karyawan']);
+        $created = 0;
+        for ($i = $existing; $i < 100; $i++) {
+            $fn = $firstNames[$i % count($firstNames)];
+            $ln = $lastNames[$i % count($lastNames)];
+            $email = strtolower(preg_replace('/[^a-z0-9.]/','',$fn.'.'.$ln)).($i >= count($firstNames) ? ($i+1) : '').'@sit-app.local';
+            $user = \App\Models\User::firstOrCreate(['email'=>$email], ['name'=>$fn.' '.$ln,'password'=>bcrypt('password123'),'unit'=>$units[$i%count($units)],'is_active'=>true]);
+            if (!$user->hasRole('karyawan')) $user->assignRole('karyawan');
+            $created++;
+        }
+        $output[] = "Karyawan: +{$created} (total " . (\App\Models\User::count()) . ")";
+    }
+
+    // 4. Themes + Aliases + Identities
+    if ($step === 'all' || $step === 'themes') {
+        $themeNames = ['Kampanye Brand','Tutorial Produk','Behind The Scene','Testimoni Pelanggan','Promo Diskon','Tips & Trik','Edukasi','Entertainment','Trending Topic','Seasonal Content','User Generated','Corporate'];
+        foreach ($themeNames as $t) \App\Models\Theme::firstOrCreate(['normalized'=>strtolower(preg_replace('/[^a-z0-9]/i','',$t))], ['name'=>$t,'is_canonical'=>true,'usage_count'=>rand(5,50)]);
+        foreach (['product review','daily vlog','funny moments'] as $t) \App\Models\Theme::firstOrCreate(['normalized'=>strtolower(preg_replace('/[^a-z0-9]/i','',$t))], ['name'=>$t,'is_canonical'=>false]);
+        $output[] = "Themes: " . \App\Models\Theme::count();
+
+        // Aliases
+        $karyawans = \App\Models\User::where('roles.name','karyawan')->join('model_has_roles','users.id','=','model_has_roles.model_id')->join('roles','model_has_roles.role_id','=','roles.id')->pluck('users.id')->toArray();
+        if (count($karyawans) >= 10) {
+            $aliasPairs = [[$karyawans[0],'RinaS'],[$karyawans[0],'Rina S.'],[$karyawans[1],'Budi S'],[$karyawans[2],'Dewi L'],[$karyawans[4],'Siti N'],[$karyawans[5],'Rizki P'],[$karyawans[10],'Anisa R'],[$karyawans[11],'Fajar N'],[$karyawans[15],'Nabila Z'],[$karyawans[16],'Irfan H'],[$karyawans[20],'Dian W'],[$karyawans[30],'Kartika K'],[$karyawans[40],'Umi W'],[$karyawans[50],'Edo F'],[$karyawans[60],'Oscar P']];
+            foreach ($aliasPairs as [$uid,$a]) \App\Models\UserAlias::firstOrCreate(['user_id'=>$uid,'alias'=>$a]);
+        }
+        $output[] = "Aliases: " . \App\Models\UserAlias::count();
+
+        // Identities (450)
+        if (\App\Models\Identity::count() < 100) {
+            $platforms = ['tiktok','instagram','youtube','facebook','x','threads'];
+            $batch = [];
+            for ($i = 0; $i < 450; $i++) {
+                $batch[] = ['name'=>'Brand_'.($i+1),'brand'=>'Brand_'.(($i%30)+1),'platform'=>$platforms[array_rand($platforms)],'account_handle'=>'@brand'.($i+1),'created_at'=>now(),'updated_at'=>now()];
+                if (count($batch) >= 100) { \App\Models\Identity::insert($batch); $batch = []; }
+            }
+            if (!empty($batch)) \App\Models\Identity::insert($batch);
+        }
+        $output[] = "Identities: " . \App\Models\Identity::count();
+    }
+
+    // 5. Content + FYP + Leave + Attendance (separate steps for timeout safety)
+    if ($step === 'content') {
+        $period = date('Y-m');
+        $themes = \App\Models\Theme::where('is_canonical', true)->get();
+        $karyawans = \App\Models\User::where('roles.name','karyawan')->join('model_has_roles','users.id','=','model_has_roles.model_id')->join('roles','model_has_roles.role_id','=','roles.id')->pluck('users.id')->toArray();
+        $batch = [];
+        foreach ($karyawans as $uid) {
+            for ($i = 0; $i < rand(15,25); $i++) {
+                $batch[] = ['user_id'=>$uid,'theme_id'=>$themes->random()->id,'report_date'=>now()->subDays(rand(0,27)),'period'=>$period,'views'=>rand(0,5000),'file_count'=>rand(1,3),'created_at'=>now(),'updated_at'=>now()];
+            }
+        }
+        foreach (array_chunk($batch, 200) as $chunk) \App\Models\ContentReport::insert($chunk);
+        $output[] = "Content reports: " . \App\Models\ContentReport::count();
+    }
+    if ($step === 'fyp') {
+        $platforms = ['tiktok','instagram','youtube','facebook','x','threads'];
+        $themes = \App\Models\Theme::where('is_canonical', true)->get();
+        $adminFyp = \App\Models\User::where('email','fyp@sit-app.local')->first();
+        $karyawans = \App\Models\User::where('roles.name','karyawan')->join('model_has_roles','users.id','=','model_has_roles.model_id')->join('roles','model_has_roles.role_id','=','roles.id')->pluck('users.id')->toArray();
+        $batch = [];
+        foreach ($karyawans as $uid) {
+            for ($i = 0; $i < rand(5,10); $i++) {
+                $views = rand(100,50000); $eng = rand(0, intval($views*0.1));
+                $rand = rand(1,100); $status = $rand<=15?'rejected':($rand<=40?'pending':'approved');
+                $batch[] = ['user_id'=>$uid,'theme_id'=>$themes->random()->id,'platform'=>$platforms[array_rand($platforms)],'original_url'=>'https://tiktok.com/@user/video/'.rand(100000000,999999999),'content_key'=>'tiktok_'.uniqid(),'post_type'=>['main','reply','comment'][array_rand(['main','reply','comment'])],'impressions'=>$views,'engagements'=>$eng,'status'=>$status,'reviewer_id'=>$status!=='pending'?($adminFyp?->id):null,'engagement_exceeds_views'=>$eng>$views,'created_at'=>now(),'updated_at'=>now()];
+            }
+        }
+        foreach (array_chunk($batch, 200) as $chunk) \App\Models\FypReport::insert($chunk);
+        $output[] = "FYP reports: " . \App\Models\FypReport::count();
+    }
+    if ($step === 'leave') {
+        $adminAbs = \App\Models\User::where('email','absensi@sit-app.local')->first();
+        $karyawans = \App\Models\User::where('roles.name','karyawan')->join('model_has_roles','users.id','=','model_has_roles.model_id')->join('roles','model_has_roles.role_id','=','roles.id')->pluck('users.id')->toArray();
+        $batch = []; $types = ['izin','sakit','cuti','dinas_luar','lainnya'];
+        foreach ($karyawans as $uid) {
+            for ($i = 0; $i < rand(1,3); $i++) {
+                $leaveDate = now()->subDays(rand(1,28)); $rand=rand(1,100); $st=$rand<=20?'pending':($rand<=80?'approved':'rejected');
+                $batch[] = ['user_id'=>$uid,'start_date'=>$leaveDate->format('Y-m-d'),'end_date'=>$leaveDate->copy()->addDays(rand(0,2))->format('Y-m-d'),'type'=>$types[array_rand($types)],'description'=>'Keterangan izin','status'=>$st,'approver_id'=>$adminAbs?->id,'created_at'=>now(),'updated_at'=>now()];
+            }
+        }
+        foreach (array_chunk($batch, 200) as $chunk) \App\Models\LeaveRequest::insert($chunk);
+        $output[] = "Leave requests: " . \App\Models\LeaveRequest::count();
+    }
+    if ($step === 'attendance') {
+        $adminAbs = \App\Models\User::where('email','absensi@sit-app.local')->first();
+        $karyawans = \App\Models\User::where('roles.name','karyawan')->join('model_has_roles','users.id','=','model_has_roles.model_id')->join('roles','model_has_roles.role_id','=','roles.id')->pluck('users.id')->take(50)->toArray();
+        $batch = [];
+        foreach ($karyawans as $uid) {
+            for ($d = 0; $d < 30; $d++) {
+                $date = now()->subDays($d); if ($date->isWeekend()) continue;
+                $rand=rand(1,100);
+                if ($rand<=85) $st='hadir'; elseif($rand<=90)$st='izin'; elseif($rand<=93)$st='sakit'; elseif($rand<=97)$st='alfa'; elseif($rand<=99)$st='dinas_luar'; else $st='tugas_luar';
+                $flags = null;
+                if ($st==='hadir'&&rand(1,100)<=15) { $p=['terlambat','lembur','pulang_cepat','pindah_shift']; shuffle($p); $flags=array_slice($p,0,rand(1,2)); }
+                $batch[] = ['user_id'=>$uid,'date'=>$date->format('Y-m-d'),'status'=>$st,'flags'=>$flags,'recorded_by'=>$adminAbs?->id,'created_at'=>now(),'updated_at'=>now()];
+            }
+        }
+        foreach (array_chunk($batch, 200) as $chunk) \App\Models\Attendance::insert($chunk);
+        $output[] = "Attendance: " . \App\Models\Attendance::count();
+    }
+
+    $elapsed = round(microtime(true) - $start, 2);
+    $summary = "=== STEP: {$step} ({$elapsed}s) ===\n"
+        . "Users: " . \App\Models\User::count() . "\n"
+        . "Content: " . \App\Models\ContentReport::count() . "\n"
+        . "FYP: " . \App\Models\FypReport::count() . "\n"
+        . "Leave: " . \App\Models\LeaveRequest::count() . "\n"
+        . "Attendance: " . \App\Models\Attendance::count() . "\n"
+        . "Themes: " . \App\Models\Theme::count() . "\n"
+        . "Identities: " . \App\Models\Identity::count() . "\n"
+        . "\n" . implode("\n", $output);
+
+    return response($summary, 200)->header('Content-Type', 'text/plain');
 });
