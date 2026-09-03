@@ -1,6 +1,11 @@
 FROM php:8.4-cli
 
-# Install system dependencies + PHP extensions (ALL at once)
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install system dependencies + PHP extensions
 RUN apt-get update && apt-get install -y \
     libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libpq-dev libonig-dev libxml2-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -16,7 +21,7 @@ WORKDIR /app
 # Copy composer files + artisan first (cache layer)
 COPY composer.json composer.lock artisan ./
 
-# Install PHP deps (--no-scripts to skip artisan package:discover before full app)
+# Install PHP deps
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
 # Copy everything else
@@ -25,11 +30,9 @@ COPY . .
 # Build frontend
 RUN npm ci --legacy-peer-deps --ignore-scripts && npm run build
 
-# Run post-install scripts
-RUN php artisan package:discover --ansi
-
-# Cache config/routes/views
-RUN php artisan config:cache \
+# Run post-install scripts + cache
+RUN php artisan package:discover --ansi \
+    && php artisan config:cache \
     && php artisan route:cache \
     && php artisan view:cache
 
