@@ -208,11 +208,34 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
            {reports.data.map((report) => (
              <GlassCard key={report.id} className="overflow-hidden">
-               {/* Thumbnail Grid */}
+               {/* Thumbnail Grid - Real images from media */}
                 <div className="grid grid-cols-2 gap-1 mb-3 mx-auto max-w-full overflow-hidden">
-                 {report.media?.slice(0, 4).map((media, idx) => (
-                   <div key={media.id} className="aspect-square bg-surface-container-low/50 flex items-center justify-center text-2xl overflow-hidden">
-                      {media.file_type === 'mp4' || media.file_type === 'mov' ? '🎬' : '🖼️'}
+                  {report.media?.slice(0, 4).map((media, idx) => (
+                    <div key={media.id} className="aspect-square bg-surface-container-low/50 relative overflow-hidden">
+                      {media.thumbnail_path && (
+                        <img
+                          src={`/storage/${media.thumbnail_path}`}
+                          alt={`Thumbnail ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      )}
+                      {!media.thumbnail_path && media.file_path && (
+                        <img
+                          src={`/storage/${media.file_path}`}
+                          alt={`Media ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      )}
+                      {!media.thumbnail_path && !media.file_path && (
+                        <div className="w-full h-full flex items-center justify-center text-2xl">
+                          {media.file_type === 'mp4' || media.file_type === 'mov' ? '🎬' : '🖼️'}
+                        </div>
+                      )}
+                      {media.file_type === 'mp4' || media.file_type === 'mov' ? (
+                        <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">🎬</span>
+                      ) : null}
                     </div>
                   ))}
                   {(!report.media || report.media.length === 0) && (
