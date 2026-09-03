@@ -23,18 +23,9 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
   const [viewEditId, setViewEditId] = useState(null);
   const [viewValue, setViewValue] = useState('');
 
-  // Helper: placeholder component for missing images
-  const MediaPlaceholder = useMemo(() => ({ filePath, fileType }) => {
-    const color = hashColor(filePath || fileType || 'default');
-    const isVideo = fileType === 'mp4' || fileType === 'mov';
-    return (
-      <div
-        className="w-full h-full flex items-center justify-center text-2xl"
-        style={{ background: color }}
-      >
-        {isVideo ? '🎬' : '🖼️'}
-      </div>
-    );
+  // Helper: get placeholder color from hash
+  const getPlaceholderColor = useCallback((filePath, fileType) => {
+    return hashColor(filePath || fileType || 'default');
   }, []);
 
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -254,7 +245,12 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
                            onError={(e) => { e.target.src = ''; e.target.style.display = 'none'; e.target.nextElementSibling?.style.display = 'flex'; }}
                          />
                        ) : null}
-                       <MediaPlaceholder filePath={media.thumbnail_path || media.file_path} fileType={media.file_type} />
+                       <div
+                        className="w-full h-full flex items-center justify-center text-2xl"
+                        style={{ background: getPlaceholderColor(media.thumbnail_path || media.file_path, media.file_type) }}
+                      >
+                        {media.file_type === 'mp4' || media.file_type === 'mov' ? '🎬' : '🖼️'}
+                      </div>
                        {media.file_type === 'mp4' || media.file_type === 'mov' ? (
                          <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">🎬</span>
                        ) : null}
