@@ -307,7 +307,12 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
             {reports.links.map((link, idx) => (
               <button
                 key={idx}
-                onClick={() => link.url && router.get(link.url)}
+                onClick={() => {
+                  if (link.url) {
+                    const url = new URL(link.url, window.location.origin);
+                    router.get(url.pathname + url.search, {}, { preserveScroll: true, preserveState: true });
+                  }
+                }}
                 disabled={!link.url}
                 className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-all ${
                   link.active
