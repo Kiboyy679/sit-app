@@ -16,26 +16,26 @@ function hashColor(str) {
   return `hsl(${hue}, 65%, 55%)`;
 }
 
-// Helper: placeholder component for missing images
-function MediaPlaceholder({ filePath, fileType }) {
-  const color = useMemo(() => hashColor(filePath || fileType || 'default'), [filePath, fileType]);
-  const isVideo = fileType === 'mp4' || fileType === 'mov';
-  return (
-    <div
-      className="w-full h-full flex items-center justify-center text-2xl"
-      style={{ background: color }}
-    >
-      {isVideo ? '🎬' : '🖼️'}
-    </div>
-  );
-}
-
 export default function ContentIndex({ reports, themes, period, myCount }) {
   const [showUpload, setShowUpload] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
   const [viewEditId, setViewEditId] = useState(null);
   const [viewValue, setViewValue] = useState('');
+
+  // Helper: placeholder component for missing images
+  const MediaPlaceholder = useMemo(() => ({ filePath, fileType }) => {
+    const color = hashColor(filePath || fileType || 'default');
+    const isVideo = fileType === 'mp4' || fileType === 'mov';
+    return (
+      <div
+        className="w-full h-full flex items-center justify-center text-2xl"
+        style={{ background: color }}
+      >
+        {isVideo ? '🎬' : '🖼️'}
+      </div>
+    );
+  }, []);
 
   const { data, setData, post, processing, errors, reset } = useForm({
     theme: '',
