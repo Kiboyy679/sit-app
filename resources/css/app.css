@@ -24,3 +24,12 @@
     box-shadow: 0 4px 20px 0 rgba(15, 23, 42, 0.05);
   }
 }
+
+/* Mobile drawer slide animation */
+@keyframes slide-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in {
+  animation: slide-in 0.25s ease-out;
+}

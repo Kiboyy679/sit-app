@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 
 const navItems = [
@@ -25,8 +25,11 @@ export default function AppLayout({ children }) {
         !item.roles || item.roles.includes(primaryRole)
     );
 
-    // Mobile bottom nav: max 5 most relevant items
-    const mobileNav = filteredNav;
+    const [drawerOpen, setDrawerOpen] = useState(false);
+
+    // If admin role has many items, use hamburger; otherwise use bottom nav (max 5)
+    const showHamburger = filteredNav.length > 5;
+    const mobileNav = showHamburger ? [] : filteredNav.slice(0, 5);
 
     const Icon = ({ name, className = '' }) => (
         <span className={`material-symbols-outlined ${className}`}>{name}</span>
@@ -40,7 +43,7 @@ export default function AppLayout({ children }) {
                 Langsung ke konten
             </a>
 
-            {/* ===== SIDEBAR (desktop only, no logout button) ===== */}
+            {/* ===== SIDEBAR (desktop only) ===== */}
             <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 border-r border-outline-variant/50 bg-white py-6 z-50">
                 <div className="px-6 pb-6 mb-2 border-b border-outline-variant/50 flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -85,9 +88,73 @@ export default function AppLayout({ children }) {
                 </div>
             </aside>
 
-            {/* ===== TOP BAR (shared desktop+mobile, single logout button) ===== */}
+            {/* ===== MOBILE DRAWER OVERLAY ===== */}
+            {drawerOpen && (
+                <div className="md:hidden fixed inset-0 z-[60]">
+                    <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
+                    <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl flex flex-col animate-slide-in">
+                        <div className="px-5 py-5 border-b border-outline-variant/50 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-primary font-bold text-lg">shield</span>
+                                </div>
+                                <div>
+                                    <h1 className="font-headline-sm font-bold text-primary text-sm">SIT-APP</h1>
+                                    <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-semibold">Monitoring Kinerja</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setDrawerOpen(false)} className="p-1 rounded-lg hover:bg-neutral-100">
+                                <Icon name="close" className="text-[22px] text-on-surface-variant" />
+                            </button>
+                        </div>
+
+                        <nav className="flex-1 flex flex-col gap-1 mt-3 px-3 overflow-y-auto">
+                            {filteredNav.map(item => {
+                                const isActive = currentPath.startsWith(item.href);
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        onClick={() => setDrawerOpen(false)}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm font-medium
+                                            ${isActive
+                                                ? 'text-primary font-bold bg-primary/5'
+                                                : 'text-on-surface-variant hover:bg-primary/5'
+                                            }`}
+                                    >
+                                        <Icon name={item.icon} className="text-[20px]" />
+                                        <span>{item.label}</span>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        <div className="px-4 py-4 border-t border-outline-variant/50">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary text-xs font-bold">
+                                    {user?.name?.charAt(0) || '?'}
+                                </div>
+                                <div className="overflow-hidden flex-1">
+                                    <p className="text-sm font-semibold text-on-surface truncate">{user?.name || 'User'}</p>
+                                    <p className="text-xs text-on-surface-variant truncate capitalize">{primaryRole.replace('_', ' ')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ===== TOP BAR (shared desktop+mobile) ===== */}
             <header className="fixed top-0 right-0 w-full md:w-[calc(100%-16rem)] h-14 border-b border-outline-variant/50 bg-white z-40 flex justify-between items-center px-4 sm:px-6">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                    {showHamburger && (
+                        <button
+                            onClick={() => setDrawerOpen(true)}
+                            className="md:hidden p-1.5 rounded-lg hover:bg-neutral-100 transition-colors"
+                        >
+                            <Icon name="menu" className="text-[24px] text-on-surface" />
+                        </button>
+                    )}
                     <span className="md:hidden text-lg font-bold text-primary">SIT-APP</span>
                     <div className="hidden sm:block relative w-64">
                         <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm" />
@@ -122,25 +189,27 @@ export default function AppLayout({ children }) {
                 </div>
             </main>
 
-            {/* ===== BOTTOM NAV (mobile only, navigation only, NO logout) ===== */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 border-t border-outline-variant/50 bg-white">
-                <div className="flex justify-around items-center h-16 px-1" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-                    {mobileNav.map(item => {
-                        const isActive = currentPath.startsWith(item.href);
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors text-[10px] font-semibold min-w-0 flex-1
-                                    ${isActive ? 'text-primary' : 'text-on-surface-variant'}`}
-                            >
-                                <Icon name={item.icon} className="text-[22px]" />
-                                <span className="truncate max-w-[64px]">{item.label}</span>
-                            </Link>
-                        );
-                    })}
-                </div>
-            </nav>
+            {/* ===== BOTTOM NAV (mobile only, max 5 items) ===== */}
+            {!showHamburger && mobileNav.length > 0 && (
+                <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 border-t border-outline-variant/50 bg-white">
+                    <div className="flex justify-around items-center h-16 px-1" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+                        {mobileNav.map(item => {
+                            const isActive = currentPath.startsWith(item.href);
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors text-[10px] font-semibold min-w-0 flex-1
+                                        ${isActive ? 'text-primary' : 'text-on-surface-variant'}`}
+                                >
+                                    <Icon name={item.icon} className="text-[22px]" />
+                                    <span className="truncate max-w-[64px]">{item.label}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </nav>
+            )}
         </div>
     );
 }
