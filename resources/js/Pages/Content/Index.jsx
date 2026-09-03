@@ -212,27 +212,27 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
                 <div className="grid grid-cols-2 gap-1 mb-3 mx-auto max-w-full overflow-hidden">
                   {report.media?.slice(0, 4).map((media, idx) => (
                     <div key={media.id} className="aspect-square bg-surface-container-low/50 relative overflow-hidden">
-                      {media.thumbnail_path && (
+                      {media.thumbnail_path ? (
                         <img
                           src={`/storage/${media.thumbnail_path}`}
                           alt={`Thumbnail ${idx + 1}`}
                           className="w-full h-full object-cover"
                           loading="lazy"
-                          onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.style.display = 'flex'; }}
+                          onError={(e) => { e.target.src = ''; e.target.style.background = '#e0e0e0'; e.target.alt = 'Gambar tidak tersedia'; }}
                         />
-                      )}
-                      {!media.thumbnail_path && media.file_path && (
+                      ) : media.file_path ? (
                         <img
                           src={`/storage/${media.file_path}`}
                           alt={`Media ${idx + 1}`}
                           className="w-full h-full object-cover"
                           loading="lazy"
-                          onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.style.display = 'flex'; }}
+                          onError={(e) => { e.target.src = ''; e.target.style.background = '#e0e0e0'; e.target.alt = 'Gambar tidak tersedia'; }}
                         />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl bg-surface-container-low/50">
+                          {media.file_type === 'mp4' || media.file_type === 'mov' ? '🎬' : '🖼️'}
+                        </div>
                       )}
-                      <div className={`w-full h-full flex items-center justify-center text-2xl ${(media.thumbnail_path || media.file_path) ? 'hidden' : ''}`}>
-                        {media.file_type === 'mp4' || media.file_type === 'mov' ? '🎬' : '🖼️'}
-                      </div>
                       {media.file_type === 'mp4' || media.file_type === 'mov' ? (
                         <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">🎬</span>
                       ) : null}
