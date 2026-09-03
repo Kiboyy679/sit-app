@@ -1,10 +1,34 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import GlassCard from '@/Components/GlassCard';
 import Button from '@/Components/Button';
 import Input from '@/Components/Input';
 import Badge from '@/Components/Badge';
+
+// Helper: generate consistent color from string hash
+function hashColor(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 65%, 55%)`;
+}
+
+// Helper: placeholder component for missing images
+function MediaPlaceholder({ filePath, fileType }) {
+  const color = useMemo(() => hashColor(filePath || fileType || 'default'), [filePath, fileType]);
+  const isVideo = fileType === 'mp4' || fileType === 'mov';
+  return (
+    <div
+      className="w-full h-full flex items-center justify-center text-2xl"
+      style={{ background: color }}
+    >
+      {isVideo ? '🎬' : '🖼️'}
+    </div>
+  );
+}
 
 export default function ContentIndex({ reports, themes, period, myCount }) {
   const [showUpload, setShowUpload] = useState(false);
@@ -208,42 +232,40 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
            {reports.data.map((report) => (
              <GlassCard key={report.id} className="overflow-hidden">
-               {/* Thumbnail Grid - Real images with fallback */}
-                <div className="grid grid-cols-2 gap-1 mb-3 mx-auto max-w-full overflow-hidden">
-                  {report.media?.slice(0, 4).map((media, idx) => (
-                    <div key={media.id} className="aspect-square bg-surface-container-low/50 relative overflow-hidden">
-                      {media.thumbnail_path ? (
-                        <img
-                          src={`/storage/${media.thumbnail_path}`}
-                          alt={`Thumbnail ${idx + 1}`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          onError={(e) => { e.target.src = ''; e.target.style.background = '#e0e0e0'; e.target.alt = 'Gambar tidak tersedia'; }}
-                        />
-                      ) : media.file_path ? (
-                        <img
-                          src={`/storage/${media.file_path}`}
-                          alt={`Media ${idx + 1}`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          onError={(e) => { e.target.src = ''; e.target.style.background = '#e0e0e0'; e.target.alt = 'Gambar tidak tersedia'; }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-2xl bg-surface-container-low/50">
-                          {media.file_type === 'mp4' || media.file_type === 'mov' ? '🎬' : '🖼️'}
-                        </div>
-                      )}
-                      {media.file_type === 'mp4' || media.file_type === 'mov' ? (
-                        <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">🎬</span>
-                      ) : null}
-                    </div>
-                  ))}
-                  {(!report.media || report.media.length === 0) && (
-                    <div className="col-span-2 aspect-video bg-surface-container-low/50 flex items-center justify-center text-on-surface-variant/30 text-sm">
-                      Tidak ada berkas
-                    </div>
-                  )}
-                </div>
+               {/* Thumbnail Grid - Real images with colored placeholders */}
+                 <div className="grid grid-cols-2 gap-1 mb-3 mx-auto max-w-full overflow-hidden">
+                   {report.media?.slice(0, 4).map((media, idx) => (
+                     <div key={media.id} className="aspect-square relative overflow-hidden">
+                       {media.thumbnail_path ? (
+                         <img
+                           src={`/storage/${media.thumbnail_path}`}
+                           alt={`Thumbnail ${idx + 1}`}
+                           className="w-full h-full object-cover"
+                           loading="lazy"
+                           onError={(e) => { e.target.src = ''; e.target.style.display = 'none'; e.target.nextElementSibling?.style.display = 'flex'; }}
+                         />
+                       ) : null}
+                       {media.file_path && !media.thumbnail_path ? (
+                         <img
+                           src={`/storage/${media.file_path}`}
+                           alt={`Media ${idx + 1}`}
+                           className="w-full h-full object-cover"
+                           loading="lazy"
+                           onError={(e) => { e.target.src = ''; e.target.style.display = 'none'; e.target.nextElementSibling?.style.display = 'flex'; }}
+                         />
+                       ) : null}
+                       <MediaPlaceholder filePath={media.thumbnail_path || media.file_path} fileType={media.file_type} />
+                       {media.file_type === 'mp4' || media.file_type === 'mov' ? (
+                         <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">🎬</span>
+                       ) : null}
+                     </div>
+                   ))}
+                   {(!report.media || report.media.length === 0) && (
+                     <div className="col-span-2 aspect-video bg-surface-container-low/50 flex items-center justify-center text-on-surface-variant/30 text-sm">
+                       Tidak ada berkas
+                     </div>
+                   )}
+                 </div>
 
                 {/* Info */}
                 <div className="space-y-2">
