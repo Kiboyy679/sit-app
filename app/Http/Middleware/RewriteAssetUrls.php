@@ -10,7 +10,6 @@ class RewriteAssetUrls
     public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
-
         $contentType = $response->headers->get('Content-Type', '');
         if (!str_contains($contentType, 'text/html')) {
             return $response;
@@ -21,8 +20,18 @@ class RewriteAssetUrls
             return $response;
         }
 
-        // Rewrite only absolute localhost URLs in link/script href/src attributes
-        // Do NOT rewrite Inertia data-page JSON (JS handles that via base URL)
+        // Replace all absolute URLs with current domain to relative paths
+        $host = $request->getHost();
+        $schemes = ['https', 'http'];
+        foreach ($schemes as $scheme) {
+            $content = str_replace(
+                $scheme . '://' . $host . '/',
+                '/',
+                $content
+            );
+        }
+
+        // Fallback: rewrite any localhost URLs
         $content = str_replace(
             ['http://localhost:8080/', 'http://127.0.0.1:8080/'],
             '/',

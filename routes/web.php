@@ -114,3 +114,26 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('archive')->
 });
 
 require __DIR__.'/auth.php';
+
+// TEMPORARY: Remove after first run
+Route::get('/migrate-now', function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    return response(\Illuminate\Support\Facades\Artisan::output(), 200)->header('Content-Type', 'text/plain');
+});
+
+Route::get('/seed-now', function () {
+    // Create a super admin user directly
+    $user = \App\Models\User::firstOrCreate(
+        ['email' => 'super@sit-app.local'],
+        [
+            'name' => 'Super Admin',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'unit' => 'IT',
+            'is_active' => true,
+        ]
+    );
+    // Create role if not exists
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super_admin']);
+    $user->assignRole('super_admin');
+    return response("User created: super@sit-app.local / password123", 200)->header('Content-Type', 'text/plain');
+});
