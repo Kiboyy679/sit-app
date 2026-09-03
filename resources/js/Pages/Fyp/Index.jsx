@@ -32,6 +32,71 @@ const statuses = [
   { value: 'rejected', label: 'Ditolak' },
 ];
 
+function getPlatformPreview(url, platform) {
+  if (!url) return null;
+  
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?\s]+)/);
+    const videoId = match ? match[1] : null;
+    if (videoId) {
+      return (
+        <img
+          src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+          alt="YouTube preview"
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      );
+    }
+  }
+  
+  if (url.includes('tiktok.com')) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-3xl bg-gradient-to-br from-pink-500 to-orange-500">
+        🎵
+      </div>
+    );
+  }
+  
+  if (url.includes('instagram.com')) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500">
+        📷
+      </div>
+    );
+  }
+  
+  if (url.includes('facebook.com') || url.includes('fb.com')) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-3xl bg-blue-600">
+        👍
+      </div>
+    );
+  }
+  
+  if (url.includes('x.com') || url.includes('twitter.com')) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-3xl bg-slate-800">
+        🐦
+      </div>
+    );
+  }
+  
+  if (url.includes('threads.net')) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-3xl bg-black">
+        🧵
+      </div>
+    );
+  }
+  
+  return (
+    <div className="w-full h-full flex items-center justify-center text-3xl bg-surface-container-high">
+      🔗
+    </div>
+  );
+}
+
 export default function FypIndex({ reports, themes, stats, karyawanList }) {
   const { auth } = usePage().props;
   const isAdmin = auth.user?.roles?.some(r => ['super_admin', 'admin_fyp'].includes(r));
@@ -363,6 +428,14 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
               <div className="flex items-center justify-between">
                 <Badge variant="neon">{report.theme?.name || '-'}</Badge>
                 <span className="text-[11px] text-on-surface-variant">{report.user?.name}</span>
+              </div>
+
+              {/* Platform Preview Thumbnail */}
+              <div className="relative aspect-video bg-surface-container-low/50 rounded-lg overflow-hidden">
+                {getPlatformPreview(report.original_url, report.platform)}
+                <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded">
+                  {report.platform}
+                </div>
               </div>
 
               {/* Metrics */}
