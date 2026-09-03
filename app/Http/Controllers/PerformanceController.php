@@ -24,7 +24,7 @@ class PerformanceController extends Controller
         $contentStats = ContentReport::select(
                 'user_id',
                 DB::raw('COALESCE(SUM(file_count),0) as content_count'),
-                DB::raw('COALESCE(SUM(view_count),0) as total_views')
+                DB::raw('COALESCE(SUM(views),0) as total_views')
             )
             ->whereIn('user_id', $kIds)
             ->where('submitted_at', 'like', "$period%")
