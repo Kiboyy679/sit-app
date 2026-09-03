@@ -155,7 +155,7 @@ Route::get('/seed-now', function () {
                 $rand=rand(1,100);
                 if ($rand<=85) $st='hadir'; elseif($rand<=90)$st='izin'; elseif($rand<=93)$st='sakit'; elseif($rand<=97)$st='alfa'; elseif($rand<=99)$st='dinas_luar'; else $st='tugas_luar';
                 $flags = null;
-                if ($st==='hadir'&&rand(1,100)<=15) { $p=['terlambat','lembur','pulang_cepat','pindah_shift']; shuffle($p); $flags=array_slice($p,0,rand(1,2)); }
+                if ($st==='hadir'&&rand(1,100)<=15) { $p=['terlambat','lembur','pulang_cepat','pindah_shift']; shuffle($p); $flags=json_encode(array_slice($p,0,rand(1,2))); }
                 $batch[] = ['user_id'=>$uid,'date'=>$date->format('Y-m-d'),'status'=>$st,'flags'=>$flags,'recorded_by'=>$adminAbs?->id,'created_at'=>now(),'updated_at'=>now()];
             }
         }
