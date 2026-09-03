@@ -205,13 +205,13 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
 
         {/* Content Grid */}
         {reports.data.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {reports.data.map((report) => (
-              <GlassCard key={report.id} className="overflow-hidden">
-                {/* Thumbnail Grid */}
-                <div className="grid grid-cols-2 gap-1 mb-3 -mx-6 -mt-6">
-                  {report.media?.slice(0, 4).map((media, idx) => (
-                    <div key={media.id} className="aspect-square bg-surface-container-low/50 flex items-center justify-center text-2xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
+           {reports.data.map((report) => (
+             <GlassCard key={report.id} className="overflow-hidden">
+               {/* Thumbnail Grid */}
+                <div className="grid grid-cols-2 gap-1 mb-3 mx-auto max-w-full overflow-hidden">
+                 {report.media?.slice(0, 4).map((media, idx) => (
+                   <div key={media.id} className="aspect-square bg-surface-container-low/50 flex items-center justify-center text-2xl overflow-hidden">
                       {media.file_type === 'mp4' || media.file_type === 'mov' ? '🎬' : '🖼️'}
                     </div>
                   ))}

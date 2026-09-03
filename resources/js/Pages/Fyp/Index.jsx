@@ -234,7 +234,7 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
 
         {/* ===== DESKTOP TABLE (md+) ===== */}
         <GlassCard className="hidden md:block">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-w-full">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-outline-variant/30 text-left text-on-surface-variant">
@@ -316,7 +316,7 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
         </GlassCard>
 
         {/* ===== MOBILE CARDS (< md) ===== */}
-        <div className="md:hidden space-y-3">
+        <div className="md:hidden space-y-3 max-w-full overflow-hidden">
           {isAdmin && reports.data.some(r => r.status === 'pending') && (
             <div className="flex items-center gap-2 px-1">
               <input type="checkbox" onChange={toggleSelectAll}
@@ -327,7 +327,7 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
             </div>
           )}
           {reports.data.map((report) => (
-            <div key={report.id} className={`bg-white border border-outline-variant/30 rounded-xl p-4 space-y-3 ${selectedIds.includes(report.id) ? 'border-primary/50 bg-primary/5' : ''}`}>
+            <div key={report.id} className={`bg-white border border-outline-variant/30 rounded-xl p-4 space-y-3 max-w-full overflow-hidden ${selectedIds.includes(report.id) ? 'border-primary/50 bg-primary/5' : ''}`}>
               {/* Top row: platform + status */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -355,7 +355,7 @@ export default function FypIndex({ reports, themes, stats, karyawanList }) {
               </div>
 
               {/* URL */}
-              <div className="text-xs text-on-surface truncate" title={report.original_url}>
+              <div className="text-xs text-on-surface truncate max-w-full" title={report.original_url}>
                 {report.original_url}
               </div>
 
