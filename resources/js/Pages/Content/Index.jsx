@@ -269,13 +269,13 @@ export default function ContentIndex({ reports, themes, period, myCount }) {
 
         {/* Pagination */}
         {reports.last_page > 1 && (
-          <div className="flex justify-center gap-2">
+          <div className="flex justify-center gap-1 sm:gap-2 flex-wrap">
             {reports.links.map((link, idx) => (
               <button
                 key={idx}
                 onClick={() => link.url && router.get(link.url)}
                 disabled={!link.url}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-all ${
                   link.active
                     ? 'bg-primary/10 text-primary font-medium'
                     : link.url
