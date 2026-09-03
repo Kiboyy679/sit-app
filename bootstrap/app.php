@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\RewriteAssetUrls::class,
         ]);
 
+        $middleware->trustProxies(at: \App\Http\Middleware\TrustProxies::class);
+
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

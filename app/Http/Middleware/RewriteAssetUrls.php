@@ -10,6 +10,15 @@ class RewriteAssetUrls
     public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
+
+        // Force HTTPS on redirect Location header (Vercel proxy sets X-Forwarded-Proto)
+        if ($response->headers->has('Location')) {
+            $location = $response->headers->get('Location');
+            if (str_starts_with($location, 'http://')) {
+                $response->headers->set('Location', 'https://' . substr($location, 7));
+            }
+        }
+
         $contentType = $response->headers->get('Content-Type', '');
         if (!str_contains($contentType, 'text/html')) {
             return $response;
