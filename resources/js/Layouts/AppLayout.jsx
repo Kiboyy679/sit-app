@@ -196,8 +196,8 @@ export default function AppLayout({ children }) {
             </header>
 
             {/* ===== MAIN CONTENT ===== */}
-            <main id="main-content" className="flex-1 md:ml-64 pt-14 pb-20 md:pb-6 min-h-screen" role="main">
-                <div className="p-4 sm:p-6 lg:p-10 max-w-[1600px] mx-auto flex flex-col gap-6 sm:gap-8">
+            <main id="main-content" className="flex-1 md:ml-64 pt-14 pb-20 md:pb-6 min-h-screen overflow-x-hidden" role="main">
+                <div className="p-4 sm:p-6 lg:p-10 max-w-[1600px] mx-auto flex flex-col gap-6 sm:gap-8 w-full max-w-full">
                     {children}
                 </div>
             </main>

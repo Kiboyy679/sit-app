@@ -8,7 +8,7 @@ export default function GlassCard({ title, children, footerAction, className = '
           {title}
         </h3>
       )}
-      <div className="text-on-surface">{children}</div>
+      <div className="text-on-surface overflow-x-hidden max-w-full">{children}</div>
       {footerAction && (
         <div className="mt-4 pt-3 border-t border-outline-variant/30 flex justify-end">
           {footerAction}
